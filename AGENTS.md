@@ -95,10 +95,11 @@ Format: `type(scope): subject`
 - Types: `feat`, `fix`, `improvement`, `refactor`, `docs`, `test`, `chore`, `ci`, `perf`, `revert`
 - Scope: affected bounded context or layer — replace `servicename` with your actual service name
 - For `fix`: describe the symptom and trigger, not the code change
-  - ✅ `fix(security): unauthenticated requests bypass tenant guard in single-tenant mode`
-  - ❌ `fix(security): add missing auth check`
+    - ✅ `fix(security): unauthenticated requests bypass tenant guard in single-tenant mode`
+    - ❌ `fix(security): add missing auth check`
 
 Examples:
+
 - `feat(domain): add soft-delete support to aggregate root`
 - `fix(messaging): consumer silently drops events with unknown tenant key`
 - `refactor(infrastructure): extract CORS config into dedicated properties class`
