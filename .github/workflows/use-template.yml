@@ -10,7 +10,8 @@ jobs:
     # - https://docs.github.com/en/actions/learn-github-actions/contexts
     # - https://docs.github.com/en/actions/learn-github-actions/expressions
     if: ${{ !github.event.repository.is_template }}
-    permissions: "write-all"
+    permissions:
+      contents: write
     runs-on: "ubuntu-latest"
     steps:
       - name: "Check out the repo"
