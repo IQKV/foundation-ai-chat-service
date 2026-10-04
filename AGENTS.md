@@ -255,6 +255,7 @@ Before making recommendations, agents should understand the project's technology
 > **This is a GitHub template.** The strategy below is the default used in this repository. When you instantiate the template, replace it with whatever model fits your team — Gitflow, GitHub Flow, environment-branch promotion, or something else entirely. The branch names, CI triggers, and protection rules in this file and in `.github/workflows/` all need to match your chosen model.
 >
 > Common alternatives:
+>
 > - **GitHub Flow** — single `main` branch, short-lived feature branches, deploy on merge
 > - **Gitflow** — `main` + `develop`, `release/*` branches, hotfixes from `main`
 > - **Environment branches** — `dev` → `staging` → `main`, promotion via PRs or CI
@@ -276,6 +277,7 @@ dev  ← trunk (stable, always green)
 ```
 
 **Release flow:**
+
 ```bash
 # Cut a release from dev
 git tag -a v1.2.0 -m "chore(release): v1.2.0"
