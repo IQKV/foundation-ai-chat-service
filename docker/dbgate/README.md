@@ -16,7 +16,7 @@ The `connections.jsonl` file contains pre-configured connections template for mi
 
 ### 2. RabbitMQ - Servicename
 
-- **ID**: `rabbitmq-management`
+- **ID**: `rabbitmq-servicename`
 - **Server**: `rabbitmq-servicename:15672`
 - **User**: `svc_servicename_rmq`
 - **Engine**: `rabbitmq@dbgate-plugin-rabbitmq`
@@ -35,7 +35,7 @@ Replace all occurrences of `servicename` with `payment`:
 
 ```json
 {"_id":"postgres-payment","engine":"postgres@dbgate-plugin-postgres","server":"postgres-payment","port":5432,"user":"svc_payment_dba","password":"svc_payment_dba","database":"payment","displayName":"PostgreSQL - Payment Service"}
-{"_id":"rabbitmq-management","engine":"rabbitmq@dbgate-plugin-rabbitmq","server":"rabbitmq-payment","port":15672,"user":"svc_payment_rmq","password":"svc_payment_rmq","displayName":"RabbitMQ - Payment Service"}
+{"_id":"rabbitmq-payment","engine":"rabbitmq@dbgate-plugin-rabbitmq","server":"rabbitmq-payment","port":15672,"user":"svc_payment_rmq","password":"svc_payment_rmq","displayName":"RabbitMQ - Payment Service"}
 ```
 
 ## Usage
