@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.iqkv.foundation.servicename.infrastructure.config;
+package com.iqkv.foundation.servicename.infrastructure.persistence;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

@@ -27,7 +27,7 @@ import java.util.List;
 
 import com.iqkv.foundation.servicename.infrastructure.security.CorrelationIdFilter;
 import com.iqkv.foundation.servicename.infrastructure.security.JwtClaimNames;
-import com.iqkv.foundation.servicename.tenancy.TenantExtractionFilter;
+import com.iqkv.foundation.servicename.infrastructure.security.TenantExtractionFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;

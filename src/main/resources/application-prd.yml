@@ -33,4 +33,4 @@ iqkv:
     password: ${RABBITMQ_PASSWORD}
   auth:
     jwt:
-      public-key-path: ${JWT_PUBLIC_KEY_PATH}
+      jwks-uri: ${JWT_JWKS_URI}

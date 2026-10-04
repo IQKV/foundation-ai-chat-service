@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.iqkv.foundation.servicename.tenancy;
+package com.iqkv.foundation.servicename.infrastructure.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.UUID;
 
-import com.iqkv.foundation.servicename.infrastructure.security.JwtClaimNames;
 import com.iqkv.foundation.tenancy.TenantContext;
 import org.slf4j.MDC;
 import org.springframework.core.Ordered;

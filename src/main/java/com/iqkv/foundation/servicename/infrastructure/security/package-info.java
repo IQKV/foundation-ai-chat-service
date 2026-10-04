@@ -21,6 +21,8 @@
  * <ul>
  *   <li>{@link com.iqkv.foundation.servicename.infrastructure.security.CorrelationIdFilter} —
  *       propagates / generates {@code X-Correlation-ID} and populates MDC.</li>
+ *   <li>{@link com.iqkv.foundation.servicename.infrastructure.security.TenantExtractionFilter} —
+ *       resolves tenant key from header or JWT claim and sets {@code TenantContext}.</li>
  *   <li>{@link com.iqkv.foundation.servicename.infrastructure.security.JwtClaimNames} —
  *       custom JWT claim name constants shared with the IAM service.</li>
  * </ul>
