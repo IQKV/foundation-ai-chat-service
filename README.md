@@ -155,6 +155,25 @@ docker compose -f compose.container.yaml up -d
 
 This project is licensed under the Apache License. See the [LICENSE](LICENSE) file for details.
 
+## Branch Strategy
+
+> **Template note:** This is the default strategy shipped with the template. Replace it with whatever model fits your team (Gitflow, GitHub Flow, environment branches, etc.) — update branch names, CI triggers, and protection rules to match.
+
+This template uses **scaled trunk-based development**:
+
+- `dev` is the trunk — always stable and deployable
+- Short-lived feature/bugfix branches merge into `dev` via pull request
+- Releases are cut from `dev` as annotated tags (`v1.2.0`) — no separate release branch
+
+```
+dev  ← trunk
+├── feature/*
+├── bugfix/*
+├── improvement/*
+├── hotfix/*
+└── rfc/*
+```
+
 ## Contributing
 
 Please read our [Contributing Guidelines](.github/CONTRIBUTING.md) and [Code of Conduct](.github/CODE_OF_CONDUCT.md).
