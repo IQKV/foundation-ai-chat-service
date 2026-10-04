@@ -252,14 +252,27 @@ Before making recommendations, agents should understand the project's technology
 
 ### Branch Strategy
 
+This project follows **scaled trunk-based development**:
+
+- `dev` is the **trunk** — the single long-lived branch, always kept stable and deployable
+- All work is done on short-lived branches that merge into `dev` via pull request
+- Releases are cut directly from `dev` as **annotated tags** (e.g. `v1.2.0`) — there is no separate release branch
+- There is no `main` or `develop` branch; `dev` serves both roles
+
 ```
-main (production-ready code)
-├── develop (main development branch)
-├── feature/* (new features)
-├── bugfix/* (bug fixes)
-├── improvement/* (enhancements)
-├── hotfix/* (production fixes)
-└── rfc/* (request for comments)
+dev  ← trunk (stable, always green)
+├── feature/*      (new features)
+├── bugfix/*       (bug fixes)
+├── improvement/*  (enhancements)
+├── hotfix/*       (urgent production fixes — merged to dev, tagged immediately)
+└── rfc/*          (request for comments / architectural proposals)
+```
+
+**Release flow:**
+```bash
+# Cut a release from dev
+git tag -a v1.2.0 -m "chore(release): v1.2.0"
+git push origin v1.2.0
 ```
 
 ### Branch Naming Conventions
@@ -813,9 +826,10 @@ name: CI/CD Pipeline
 
 on:
     push:
-        branches: [main, develop]
+        branches: [dev]
+        tags: ["v*.*.*"]
     pull_request:
-        branches: [main, develop]
+        branches: [dev]
 
 jobs:
     build-and-test:
