@@ -23,6 +23,12 @@ services:
       file: compose.base.yaml
       service: dbgate
 
+  # Ollama — local LLM inference
+  ollama:
+    extends:
+      file: compose.base.yaml
+      service: ollama
+
   # SonarQube for code quality analysis
   sonar:
     extends:
@@ -57,3 +63,5 @@ volumes:
     name: iqkv_aichat_logs_dev
   aichat_tmp:
     name: iqkv_aichat_tmp_dev
+  ollama_aichat_data:
+    name: iqkv_aichat_ollama_data_dev

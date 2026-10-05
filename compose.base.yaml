@@ -154,6 +154,10 @@ services:
       # In K8s, JWT_JWKS_URI is injected by the Helm configmap instead.
       JWT_PUBLIC_KEY_PATH: "classpath:keys/public.pem"
       JWT_JWKS_URI: ""
+
+      # Ollama — local LLM inference
+      SPRING_AI_OLLAMA_BASE_URL: "http://ollama:11434"
+      SPRING_AI_OLLAMA_CHAT_OPTIONS_MODEL: "llama3.2"
     ports:
       - "8080:8080" # AiChatService API
       - "8081:8081" # Actuator / management
@@ -182,6 +186,25 @@ services:
         reservations:
           cpus: "0.25"
           memory: 384M
+
+  # Ollama — local LLM inference
+  ollama:
+    image: ollama/ollama:latest
+    container_name: foundation-aichat-ollama-dev
+    environment:
+      # Allow requests from the service container and the local browser
+      OLLAMA_ORIGINS: "http://localhost:8080,http://aichat-service:8080"
+      # Keep models loaded indefinitely (no idle unload)
+      OLLAMA_KEEP_ALIVE: -1
+    ports:
+      - "11434:11434" # Ollama REST API
+    volumes:
+      - ollama_aichat_data:/root/.ollama
+    networks:
+      - aichat-service-network
+    restart: unless-stopped
+    # Pull a model after first start:
+    #   docker exec foundation-aichat-ollama-dev ollama pull llama3.2
 
   # SonarQube for code quality analysis
   sonar:
@@ -257,4 +280,7 @@ volumes:
     driver: local
   aichat_tmp:
     name: iqkv_aichat_tmp_dev
+    driver: local
+  ollama_aichat_data:
+    name: iqkv_aichat_ollama_data_dev
     driver: local
