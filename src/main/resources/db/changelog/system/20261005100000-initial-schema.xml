@@ -12,7 +12,7 @@
             <column name="id" type="UUID">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="user_id" type="VARCHAR(255)">
+            <column name="user_id" type="UUID">
                 <constraints nullable="false"/>
             </column>
             <column name="title" type="VARCHAR(500)"/>
