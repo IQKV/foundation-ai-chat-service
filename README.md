@@ -1,13 +1,13 @@
 # Foundation AI Chat Service 🚀
 
-GitHub template demonstrating Spring AI integration on the iQ Key Value platform. Extends the standard `foundation-microservice-project-layout` with a working chat feature — use it as a starting point for services that need LLM-backed conversational capabilities.
+GitHub template demonstrating Spring AI integration on the iQ Key Value platform. Extends the standard `foundation-microservice-project-layout` with a working chat feature backed by Ollama — use it as a starting point for services that need locally-hosted LLM-backed conversational capabilities.
 
 ## About
 
 This template provides:
 
 - **Maven single-module layout** — standard `src/main/java` structure with MyBatis, PostgreSQL, Liquibase, and RabbitMQ wired up
-- **Spring AI integration** — chat endpoint wired to a configurable LLM backend (OpenAI-compatible)
+- **Spring AI integration** — chat endpoint wired to a local Ollama instance by default; swap to any OpenAI-compatible provider via `spring.ai.*` config
 - **Multi-profile Spring config** — `local`, `sit`, `uat`, `prd` profiles with correct defaults per environment
 - **Docker Compose** — `compose.base.yaml` with PostgreSQL, RabbitMQ, MailHog, SonarQube, Prometheus, and Grafana; `compose.container.yaml` for full runtime stack including the service container
 - **Dockerfile** — multi-stage build with layered JAR extraction, non-root `appuser`, and JVM tuning
@@ -35,7 +35,7 @@ This template provides:
 ## Tech Stack
 
 - Java 25 / Spring Boot (latest via parent POM)
-- Spring AI (OpenAI-compatible chat client)
+- Spring AI with Ollama (default; switchable to any OpenAI-compatible provider)
 - MyBatis 3.x (no JPA) + PostgreSQL 17
 - Liquibase for schema migrations
 - RabbitMQ for async messaging
@@ -50,6 +50,7 @@ This template provides:
 - Maven 3.9+
 - Node.js >= 22.15.0 & pnpm >= 10.33.2 (git hooks)
 - Docker & Docker Compose
+- [Ollama](https://ollama.com) running locally with at least one model pulled (e.g. `ollama pull llama3.2`)
 
 ## Quick Start
 
@@ -61,9 +62,12 @@ cd my-service
 # Install git hooks
 pnpm install
 
+# Pull a model into Ollama (one-time)
+ollama pull llama3.2
+
 # Copy environment variables
 cp .env.example .env.local
-# Edit .env.local — defaults work for local Docker setup
+# Defaults point to Ollama on localhost:11434 — no API key needed for local dev
 
 # Start dependencies (PostgreSQL, RabbitMQ, MailHog, etc.)
 docker compose up -d
@@ -78,21 +82,23 @@ docker compose up -d
 
 ## Environment Variables
 
-| Variable            | Default            | Description           |
-| ------------------- | ------------------ | --------------------- |
-| `DB_HOST`           | `localhost`        | PostgreSQL host       |
-| `DB_PORT`           | `5432`             | PostgreSQL port       |
-| `DB_NAME`           | `aichat`           | Database name         |
-| `DB_USERNAME`       | `svc_aichat_dba`   | Database user         |
-| `DB_PASSWORD`       | `svc_aichat_dba`   | Database password     |
-| `RABBITMQ_HOST`     | `localhost`        | RabbitMQ host         |
-| `RABBITMQ_PORT`     | `5672`             | RabbitMQ AMQP port    |
-| `RABBITMQ_USERNAME` | `svc_aichat_rmq`   | RabbitMQ user         |
-| `RABBITMQ_PASSWORD` | `svc_aichat_rmq`   | RabbitMQ password     |
-| `MAIL_HOST`         | `localhost`        | SMTP host (MailHog)   |
-| `MAIL_PORT`         | `1025`             | SMTP port             |
-| `MAIL_FROM`         | `noreply@iqkv.dev` | Default sender email  |
-| `ROLLOUT_MODE`      | `MULTI_TENANT`     | Platform rollout mode |
+| Variable                              | Default                  | Description                               |
+| ------------------------------------- | ------------------------ | ----------------------------------------- |
+| `DB_HOST`                             | `localhost`              | PostgreSQL host                           |
+| `DB_PORT`                             | `5432`                   | PostgreSQL port                           |
+| `DB_NAME`                             | `aichat`                 | Database name                             |
+| `DB_USERNAME`                         | `svc_aichat_dba`         | Database user                             |
+| `DB_PASSWORD`                         | `svc_aichat_dba`         | Database password                         |
+| `RABBITMQ_HOST`                       | `localhost`              | RabbitMQ host                             |
+| `RABBITMQ_PORT`                       | `5672`                   | RabbitMQ AMQP port                        |
+| `RABBITMQ_USERNAME`                   | `svc_aichat_rmq`         | RabbitMQ user                             |
+| `RABBITMQ_PASSWORD`                   | `svc_aichat_rmq`         | RabbitMQ password                         |
+| `MAIL_HOST`                           | `localhost`              | SMTP host (MailHog)                       |
+| `MAIL_PORT`                           | `1025`                   | SMTP port                                 |
+| `MAIL_FROM`                           | `noreply@iqkv.dev`       | Default sender email                      |
+| `SPRING_AI_OLLAMA_BASE_URL`           | `http://localhost:11434` | Ollama server URL                         |
+| `SPRING_AI_OLLAMA_CHAT_OPTIONS_MODEL` | `llama3.2`               | Model name (must be pulled in Ollama)     |
+| `ROLLOUT_MODE`                        | `MULTI_TENANT`           | Platform rollout mode                     |
 
 > Copy `.env.example` to `.env.local` / `.env.uat` / `.env.prd` and fill in values per environment.
 
@@ -184,7 +190,7 @@ Please read our [Contributing Guidelines](.github/CONTRIBUTING.md) and [Code of 
 
 ## 🧩 Architecture
 
-- **Spring AI**: Chat client wired to an OpenAI-compatible backend; swap provider via `spring.ai.*` config
+- **Spring AI**: Ollama chat client configured via `spring.ai.ollama.*`; model is overridable per request; swap to any OpenAI-compatible provider by changing the auto-configuration dependency and `spring.ai.*` properties — no code changes needed
 - **Persistence**: MyBatis with XML mappers + PostgreSQL; Liquibase manages schema migrations; `demo` context for seed data in local/sit/uat
 - **Messaging**: RabbitMQ consumer/publisher; `iqkv.messaging.rabbitmq.enabled` toggle — disabled in base, enabled per profile
 - **Security**: Spring Security + OAuth2 Resource Server; RS256 JWT validated via public key; `@PreAuthorize` on every endpoint

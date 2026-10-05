@@ -1,12 +1,12 @@
 # Foundation AI Chat Service 💬
 
-Spring AI integration template on the iQ Key Value platform. Demonstrates how to wire a multi-tenant, JWT-secured chat endpoint to an OpenAI-compatible LLM backend within the standard foundation microservice layout.
+Spring AI integration template on the iQ Key Value platform. Demonstrates how to wire a multi-tenant, JWT-secured chat endpoint to a local Ollama instance within the standard foundation microservice layout. Works with any OpenAI-compatible provider via config.
 
 ## About
 
 The AI Chat service provides a production-ready starting point for LLM-backed conversational features:
 
-- **Spring AI Integration** — chat client pre-wired to an OpenAI-compatible backend; swap providers via `spring.ai.*` config with no code changes
+- **Spring AI Integration** — chat client pre-wired to a local Ollama instance by default; swap to any OpenAI-compatible provider via `spring.ai.*` config with no code changes
 - **Streaming & Blocking Modes** — supports both blocking response and server-sent event (SSE) streaming out of the box
 - **Multi-Tenant Isolation** — tenant context resolved from `X-Tenant-ID` header or JWT claim before every request; each tenant's conversation history is fully isolated
 - **Conversation Persistence** — chat sessions and message history stored in PostgreSQL via MyBatis; Liquibase manages per-tenant schema migrations
@@ -46,7 +46,7 @@ Base path: `/api/v1/aichat`
 ## Tech Stack
 
 - Java 25 / Spring Boot 4.x
-- Spring AI (OpenAI-compatible chat client)
+- Spring AI with Ollama (default; switchable to any OpenAI-compatible provider)
 - MyBatis 3.x (no JPA) + PostgreSQL 17
 - Liquibase for schema migrations
 - RabbitMQ for async messaging and audit event publishing
@@ -65,6 +65,7 @@ Base path: `/api/v1/aichat`
 - Maven 3.9+
 - Node.js >= 22.15.0 & pnpm >= 10.33.2 (git hooks)
 - Docker & Docker Compose
+- [Ollama](https://ollama.com) running locally with at least one model pulled (e.g. `ollama pull llama3.2`)
 
 ## Quick Start
 
@@ -76,9 +77,12 @@ cd foundation-ai-chat-service
 # Install git hooks
 pnpm install
 
+# Pull a model into Ollama (one-time)
+ollama pull llama3.2
+
 # Copy environment variables
 cp .env.example .env.local
-# Edit .env.local — set SPRING_AI_OPENAI_API_KEY and BASE_URL for your LLM provider
+# Defaults point to Ollama on localhost:11434 — no edits needed for first-run
 
 # Start infrastructure dependencies (PostgreSQL, RabbitMQ, MailHog)
 docker compose up -d
@@ -106,13 +110,12 @@ docker compose up -d
 | `MAIL_HOST`                           | `localhost`              | SMTP host                                           |
 | `MAIL_PORT`                           | `1025`                   | SMTP port (MailHog default)                         |
 | `MAIL_FROM`                           | `noreply@iqkv.dev`       | Sender address                                      |
-| `SPRING_PROFILES_ACTIVE`              | `local`                  | Active Spring profile                               |
-| `SPRING_AI_OPENAI_API_KEY`            | _(required)_             | API key for the LLM provider                        |
-| `SPRING_AI_OPENAI_BASE_URL`           | `https://api.openai.com` | Base URL — override for OpenAI-compatible providers |
-| `SPRING_AI_OPENAI_CHAT_OPTIONS_MODEL` | `gpt-4o-mini`            | Default model name                                  |
-| `ROLLOUT_MODE`                        | `MULTI_TENANT`           | Platform rollout mode                               |
+| `SPRING_PROFILES_ACTIVE`              | `local`                   | Active Spring profile                                             |
+| `SPRING_AI_OLLAMA_BASE_URL`           | `http://localhost:11434`  | Ollama server URL                                                 |
+| `SPRING_AI_OLLAMA_CHAT_OPTIONS_MODEL` | `llama3.2`                | Model to use (must be pulled in Ollama first)                     |
+| `ROLLOUT_MODE`                        | `MULTI_TENANT`            | Platform rollout mode                                             |
 
-> Copy `.env.example` to `.env.local` / `.env.uat` / `.env.prd` and fill in values per environment. The defaults in `.env.example` match the local Docker Compose setup — only `SPRING_AI_OPENAI_API_KEY` and `SPRING_AI_OPENAI_BASE_URL` require real values.
+> Copy `.env.example` to `.env.local` / `.env.uat` / `.env.prd` and fill in values per environment. The defaults point to a local Ollama instance — no API key needed for local development. To switch to OpenAI or another provider, replace the `SPRING_AI_OLLAMA_*` variables with the corresponding `SPRING_AI_OPENAI_*` ones and add `SPRING_AI_OPENAI_API_KEY`.
 
 ## Maven Commands
 
@@ -180,7 +183,7 @@ Please read our [Contributing Guidelines](.github/CONTRIBUTING.md) and [Code of 
 
 ## 🧩 Architecture
 
-- **Spring AI**: Chat client bean configured via `spring.ai.openai.*`; model, temperature, and max-tokens are overridable per request; provider swap requires only config changes
+- **Spring AI**: Ollama chat client configured via `spring.ai.ollama.*`; model is overridable per request; swap to any OpenAI-compatible provider by changing the auto-configuration dependency and `spring.ai.*` properties — no code changes needed
 - **Persistence**: MyBatis with XML mappers + PostgreSQL; Liquibase manages per-tenant schema migrations; `demo` context seeds example sessions in local/sit/uat
 - **Messaging**: RabbitMQ publisher for `AuditEvent` messages; `iqkv.messaging.rabbitmq.enabled` toggle — disabled in base profile, enabled per environment
 - **Security**: Spring Security + OAuth2 Resource Server; RS256 JWT validated via public key or JWKS URI; `@PreAuthorize` on every endpoint; tenant context resolved before request handling
