@@ -5,5 +5,10 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
             http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.33.xsd">
 
+    <!-- Tenant-scoped (t_{tenantKey}) schema migrations.
+         TenantLiquibaseRunner sets the search_path to t_{tenantKey} before running these.
+         Tables declared here are automatically isolated per tenant. -->
+
+    <include file="db/changelog/tenant/20261005100000-initial-schema.xml"/>
 
 </databaseChangeLog>

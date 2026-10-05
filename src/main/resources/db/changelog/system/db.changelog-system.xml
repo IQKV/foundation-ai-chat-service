@@ -5,5 +5,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
             http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.33.xsd">
 
+    <!-- System (public) schema migrations.
+         Tables here are shared / cross-tenant. Add <include> entries below in timestamp order. -->
 
 </databaseChangeLog>
