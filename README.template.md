@@ -11,8 +11,7 @@ The AI Chat service provides a production-ready starting point for LLM-backed co
 - **Multi-Tenant Isolation** — tenant context resolved from `X-Tenant-ID` header or JWT claim before every request; each tenant's conversation history is fully isolated
 - **Conversation Persistence** — chat sessions and message history stored in PostgreSQL via MyBatis; Liquibase manages per-tenant schema migrations
 - **Security** — stateless JWT resource server (RS256); public chat endpoints can be exposed per tenant while admin endpoints require `PLATFORM_ADMIN` authority
-- **Audit Integration** — publishes `AuditEvent` messages to `iqkv.events` for sensitive actions (session creation, model override, quota enforcement)
-- **Billing Entitlement** — integrates `foundation-entitlement-plan-resolver-mvc` to enforce per-tenant token quotas and plan limits
+- **Audit Integration** — publishes `AuditEvent` messages to `iqkv.events` for sensitive actions (session creation, model override)
 
 ## Quick Links
 
@@ -52,16 +51,13 @@ Base path: `/api/v1/aichat`
 - Liquibase for schema migrations
 - RabbitMQ for async messaging and audit event publishing
 - Spring Security + OAuth2 Resource Server (RS256 JWT)
-- foundation-entitlement-plan-resolver-mvc (billing quota enforcement)
 - Micrometer + Prometheus
 
 ## Observability
 
 - **Custom Metrics**:
     - `aichat.request.count`: Rate of chat requests by tenant and model.
-    - `aichat.token.usage`: Input/output token consumption per tenant.
     - `aichat.session.duration`: Chat session lifetime distribution.
-    - `aichat.quota.rejections`: Rate of requests rejected by billing quota enforcement.
 
 ## Prerequisites
 
@@ -163,7 +159,7 @@ docker compose -f compose.container.yaml up -d
 src/main/java/com/iqkv/foundation/aichatservice/
 ├── chat/             # Core Bounded Context: sessions, messages, LLM orchestration
 │   ├── domain/       # ChatSession, ChatMessage entities; ChatStore port
-│   ├── application/  # ChatService (use cases), quota enforcement
+│   ├── application/  # ChatService (use cases)
 │   └── adapter/
 │       ├── in/rest/  # ChatRestResource, AdminChatRestResource
 │       └── out/persistence/ # MyBatis implementation of ChatStore
@@ -188,7 +184,6 @@ Please read our [Contributing Guidelines](.github/CONTRIBUTING.md) and [Code of 
 - **Persistence**: MyBatis with XML mappers + PostgreSQL; Liquibase manages per-tenant schema migrations; `demo` context seeds example sessions in local/sit/uat
 - **Messaging**: RabbitMQ publisher for `AuditEvent` messages; `iqkv.messaging.rabbitmq.enabled` toggle — disabled in base profile, enabled per environment
 - **Security**: Spring Security + OAuth2 Resource Server; RS256 JWT validated via public key or JWKS URI; `@PreAuthorize` on every endpoint; tenant context resolved before request handling
-- **Billing**: `foundation-entitlement-plan-resolver-mvc` enforces per-tenant token quotas before forwarding requests to the LLM; quota rejections are metered and audited
 - **Multi-tenancy**: `ROLLOUT_MODE` (`MULTI_TENANT` | `SINGLE_TENANT`) — must be identical across all platform services
 - **Observability**: Micrometer + Prometheus; structured JSON logging with Logstash encoder; health probes for Kubernetes readiness/liveness
 - **Quality Tools**: Checkstyle, JaCoCo (60% gate), ArchUnit, commit convention enforcement
