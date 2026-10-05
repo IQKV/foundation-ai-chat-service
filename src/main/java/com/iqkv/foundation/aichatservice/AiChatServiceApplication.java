@@ -25,13 +25,6 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 /**
  * Entry point for the AI Chat Service.
  *
- * <p>When scaffolding a new service from this template, replace:
- * <ul>
- *   <li>{@code aichat} → your service slug (e.g. {@code reporting})</li>
- *   <li>{@code AiChatService} → CamelCase name (e.g. {@code Reporting})</li>
- *   <li>Package {@code com.iqkv.foundation.aichatservice} → {@code com.iqkv.foundation.reportingservice}</li>
- * </ul>
- *
  * <p>{@link ConfigurationPropertiesScan} auto-discovers all {@code @ConfigurationProperties}
  * records in this package tree — no manual {@code @EnableConfigurationProperties} needed.
  */

@@ -38,15 +38,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Exemplary REST resource demonstrating the three security tiers used by all foundation services.
+ * REST resource covering the three security tiers used by all foundation services.
  *
  * <h2>Endpoint overview</h2>
  * <ol>
- *   <li><b>Public ping</b> {@code GET /api/v1/aichat/public/ping} — no authentication, no tenant
+ *   <li><b>Public ping</b> {@code GET /api/v1/aichat/ping} — no authentication, no tenant
  *       context required. A lightweight reachability probe for infrastructure tooling and smoke tests.
  *       Returns a {@link PingDtos.PublicPongResponse}.</li>
- *   <li><b>Tenant-scoped ping</b> {@code GET /api/v1/aichat/ping} — requires a valid JWT and a
- *       resolved tenant context (via {@code X-Tenant-ID} header or JWT {@code tenant_id} claim).
+ *   <li><b>Tenant-scoped ping</b> {@code GET /api/v1/aichat/tenant/ping} — requires a valid JWT
+ *       and a resolved tenant context (via {@code X-Tenant-ID} header or JWT {@code tenant_id} claim).
  *       Echoes the resolved tenant key back so clients can verify tenant resolution.
  *       Returns a {@link PingDtos.TenantPongResponse}.</li>
  *   <li><b>Admin ping</b> {@code GET /api/v1/aichat/admin/ping} — requires {@code PLATFORM_ADMIN}
@@ -54,22 +54,6 @@ import org.springframework.web.bind.annotation.RestController;
  *       Echoes the caller's {@code user_id} claim so operators can verify token decoding and authority
  *       assignment. Returns a {@link PingDtos.AdminPongResponse}.</li>
  * </ol>
- *
- * <h2>What this file demonstrates</h2>
- * <ul>
- *   <li>Class-level {@code @RequestMapping} combined with method-level path segments</li>
- *   <li>{@code @SecurityRequirement} applied per-endpoint (omitted on the public one)</li>
- *   <li>{@code @PreAuthorize} on an admin method and its absence on tenant/public methods
- *       where HTTP security rules in {@code SecurityConfig} are sufficient</li>
- *   <li>Reading tenant context from {@link TenantContext} (set by {@code TenantExtractionFilter})</li>
- *   <li>Reading JWT claims via {@code @AuthenticationPrincipal Jwt}</li>
- *   <li>Full OpenAPI annotation set: {@code @Tag}, {@code @Operation}, {@code @ApiResponses},
- *       {@code @Parameter} (header), {@code @Content} with {@code @Schema}</li>
- *   <li>Immutable record DTOs grouped in a sibling {@link PingDtos} class</li>
- * </ul>
- *
- * <p>When scaffolding a new service, replace {@code aichat} with the actual service slug
- * in the {@code @RequestMapping} paths and delete (or keep and expand) this controller.
  */
 @RestController
 @RequestMapping("/api/v1/aichat")
@@ -79,9 +63,9 @@ public class PingRestResource {
 
   // ── Public ping ──────────────────────────────────────────────────────────────
   // No @SecurityRequirement — SecurityConfig permits this path without a token.
-  // TenantExtractionFilter is bypassed via the /public/ skip rule.
+  // TenantExtractionFilter skips /api/v1/aichat/ping (see shouldNotFilter).
 
-  @GetMapping("/public/ping")
+  @GetMapping("/ping")
   @Operation(
       summary = "Public ping",
       description = "Unauthenticated reachability probe. No JWT and no tenant header required. "
@@ -97,10 +81,8 @@ public class PingRestResource {
   // ── Tenant-scoped ping ────────────────────────────────────────────────────────
   // TenantExtractionFilter resolves the tenant from X-Tenant-ID or JWT tenant_id
   // and sets TenantContext before this method is reached.
-  // No @PreAuthorize needed: SecurityConfig already requires authentication for
-  // all paths not explicitly listed as permitAll.
 
-  @GetMapping("/ping")
+  @GetMapping("/tenant/ping")
   @SecurityRequirement(name = "bearerAuth")
   @Operation(
       summary = "Tenant ping",

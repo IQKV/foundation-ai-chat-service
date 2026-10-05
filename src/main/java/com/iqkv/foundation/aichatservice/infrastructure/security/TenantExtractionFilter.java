@@ -48,8 +48,8 @@ import tools.jackson.databind.json.JsonMapper;
  * Those paths are restricted to {@code PLATFORM_ADMIN} authority and operate across all
  * tenants for oversight purposes; tenant context is applied per-use-case within those handlers.
  *
- * <p>When scaffolding a new service from this template, update {@code shouldNotFilter}
- * to reference the actual API path prefix (e.g. {@code /api/v1/reporting/admin/}).
+ * <p>The public ping endpoint ({@code /api/v1/aichat/ping}) is also exempt — it requires
+ * no authentication or tenant context and is used as an unauthenticated reachability probe.
  */
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE + 1)
@@ -95,11 +95,9 @@ public class TenantExtractionFilter extends OncePerRequestFilter {
            || path.equals("/api-docs")
            || path.startsWith("/api-docs/")
            || path.startsWith("/swagger-ui/")
-           // Public endpoints — no tenant context is meaningful here.
-           // Update this prefix when renaming the service.
-           || path.startsWith("/api/v1/aichat/public/")
+           // Public ping — no tenant context required.
+           || path.equals("/api/v1/aichat/ping")
            // Platform-admin paths — cross-tenant by design, no tenant context ever required.
-           // Update this prefix when renaming the service (e.g. /api/v1/reporting/admin/).
            || path.startsWith("/api/v1/aichat/admin/");
   }
 

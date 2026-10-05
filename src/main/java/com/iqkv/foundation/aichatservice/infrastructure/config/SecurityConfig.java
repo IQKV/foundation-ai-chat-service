@@ -60,10 +60,6 @@ import org.springframework.security.web.SecurityFilterChain;
  *   <li>{@code public-key-path} set — uses {@link NimbusJwtDecoder#withPublicKey} (local dev /
  *       tests). The PEM file is parsed once at startup; no network dependency on the IAM service.</li>
  * </ul>
- *
- * <p>When scaffolding a new service from this template, update the
- * {@code /api/v1/aichat/admin/**} path to match the actual API prefix and
- * add any additional public or role-gated endpoints as needed.
  */
 @Configuration
 @EnableWebSecurity
@@ -96,9 +92,9 @@ public class SecurityConfig {
             .requestMatchers("/api-docs/**").permitAll()
             .requestMatchers("/swagger-ui/**").permitAll()
             .requestMatchers("/swagger-ui.html").permitAll()
-            // Public endpoints — no authentication or tenant context required.
-            // TenantExtractionFilter skips these paths (see shouldNotFilter).
-            .requestMatchers("/api/v1/aichat/public/**").permitAll()
+            // Public ping — no authentication or tenant context required.
+            // TenantExtractionFilter skips this exact path (see shouldNotFilter).
+            .requestMatchers("/api/v1/aichat/ping").permitAll()
             // Platform-admin endpoints — cross-tenant oversight, PLATFORM_ADMIN only.
             // TenantExtractionFilter skips these paths (see shouldNotFilter).
             .requestMatchers("/api/v1/aichat/admin/**").hasAuthority("PLATFORM_ADMIN")
