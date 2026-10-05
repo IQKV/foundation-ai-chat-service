@@ -82,23 +82,23 @@ docker compose up -d
 
 ## Environment Variables
 
-| Variable                              | Default                  | Description                               |
-| ------------------------------------- | ------------------------ | ----------------------------------------- |
-| `DB_HOST`                             | `localhost`              | PostgreSQL host                           |
-| `DB_PORT`                             | `5432`                   | PostgreSQL port                           |
-| `DB_NAME`                             | `aichat`                 | Database name                             |
-| `DB_USERNAME`                         | `svc_aichat_dba`         | Database user                             |
-| `DB_PASSWORD`                         | `svc_aichat_dba`         | Database password                         |
-| `RABBITMQ_HOST`                       | `localhost`              | RabbitMQ host                             |
-| `RABBITMQ_PORT`                       | `5672`                   | RabbitMQ AMQP port                        |
-| `RABBITMQ_USERNAME`                   | `svc_aichat_rmq`         | RabbitMQ user                             |
-| `RABBITMQ_PASSWORD`                   | `svc_aichat_rmq`         | RabbitMQ password                         |
-| `MAIL_HOST`                           | `localhost`              | SMTP host (MailHog)                       |
-| `MAIL_PORT`                           | `1025`                   | SMTP port                                 |
-| `MAIL_FROM`                           | `noreply@iqkv.dev`       | Default sender email                      |
-| `SPRING_AI_OLLAMA_BASE_URL`           | `http://localhost:11434` | Ollama server URL                         |
-| `SPRING_AI_OLLAMA_CHAT_OPTIONS_MODEL` | `llama3.2`               | Model name (must be pulled in Ollama)     |
-| `ROLLOUT_MODE`                        | `MULTI_TENANT`           | Platform rollout mode                     |
+| Variable                              | Default                  | Description                           |
+| ------------------------------------- | ------------------------ | ------------------------------------- |
+| `DB_HOST`                             | `localhost`              | PostgreSQL host                       |
+| `DB_PORT`                             | `5432`                   | PostgreSQL port                       |
+| `DB_NAME`                             | `aichat`                 | Database name                         |
+| `DB_USERNAME`                         | `svc_aichat_dba`         | Database user                         |
+| `DB_PASSWORD`                         | `svc_aichat_dba`         | Database password                     |
+| `RABBITMQ_HOST`                       | `localhost`              | RabbitMQ host                         |
+| `RABBITMQ_PORT`                       | `5672`                   | RabbitMQ AMQP port                    |
+| `RABBITMQ_USERNAME`                   | `svc_aichat_rmq`         | RabbitMQ user                         |
+| `RABBITMQ_PASSWORD`                   | `svc_aichat_rmq`         | RabbitMQ password                     |
+| `MAIL_HOST`                           | `localhost`              | SMTP host (MailHog)                   |
+| `MAIL_PORT`                           | `1025`                   | SMTP port                             |
+| `MAIL_FROM`                           | `noreply@iqkv.dev`       | Default sender email                  |
+| `SPRING_AI_OLLAMA_BASE_URL`           | `http://localhost:11434` | Ollama server URL                     |
+| `SPRING_AI_OLLAMA_CHAT_OPTIONS_MODEL` | `llama3.2`               | Model name (must be pulled in Ollama) |
+| `ROLLOUT_MODE`                        | `MULTI_TENANT`           | Platform rollout mode                 |
 
 > Copy `.env.example` to `.env.local` / `.env.uat` / `.env.prd` and fill in values per environment.
 
