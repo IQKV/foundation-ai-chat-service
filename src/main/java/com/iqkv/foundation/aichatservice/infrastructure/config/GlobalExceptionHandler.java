@@ -21,6 +21,7 @@ import jakarta.validation.ConstraintViolationException;
 import java.net.URI;
 import java.util.UUID;
 
+import com.iqkv.foundation.aichatservice.shared.exception.ChatSessionNotFoundException;
 import com.iqkv.foundation.entitlement.plan.PlanFeatureNotAvailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +60,15 @@ public class GlobalExceptionHandler {
     pd.setProperty("correlationId", MDC.get(MDC_CORRELATION_ID));
     pd.setProperty("requestId", "req-" + UUID.randomUUID().toString().replace("-", "").substring(0, 8));
     return pd;
+  }
+
+  @ExceptionHandler(ChatSessionNotFoundException.class)
+  public ResponseEntity<ProblemDetail> handleChatSessionNotFound(final ChatSessionNotFoundException ex,
+                                                                  final HttpServletRequest request) {
+    log.warn("Chat session not found: {}", ex.getMessage());
+    final ProblemDetail pd = problem("about:blank", "Not Found", 404,
+        ex.getMessage(), request);
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(pd);
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
