@@ -1,11 +1,11 @@
 services:
-  # PostgreSQL Database for Ai Chat Service
+  # PostgreSQL Database for AI Chat Service
   postgres-aichat:
     extends:
       file: compose.base.yaml
       service: postgres-aichat
 
-  # RabbitMQ for Ai Chat Service
+  # RabbitMQ for AI Chat Service
   rabbitmq-aichat:
     extends:
       file: compose.base.yaml

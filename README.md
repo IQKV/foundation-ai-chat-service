@@ -1,12 +1,13 @@
-# Foundation Microservice Project Layout 🚀
+# Foundation AI Chat Service 🚀
 
-GitHub template for bootstrapping Spring Boot microservices on the iQ Key Value platform. Provides a standardized single-module Maven layout with Docker Compose, multi-profile Spring configuration, and all quality tooling pre-wired.
+GitHub template demonstrating Spring AI integration on the iQ Key Value platform. Extends the standard `foundation-microservice-project-layout` with a working chat feature — use it as a starting point for services that need LLM-backed conversational capabilities.
 
 ## About
 
-This template gives you a production-ready starting point:
+This template provides:
 
 - **Maven single-module layout** — standard `src/main/java` structure with MyBatis, PostgreSQL, Liquibase, and RabbitMQ wired up
+- **Spring AI integration** — chat endpoint wired to a configurable LLM backend (OpenAI-compatible)
 - **Multi-profile Spring config** — `local`, `sit`, `uat`, `prd` profiles with correct defaults per environment
 - **Docker Compose** — `compose.base.yaml` with PostgreSQL, RabbitMQ, MailHog, SonarQube, Prometheus, and Grafana; `compose.container.yaml` for full runtime stack including the service container
 - **Dockerfile** — multi-stage build with layered JAR extraction, non-root `appuser`, and JVM tuning
@@ -18,11 +19,11 @@ This template gives you a production-ready starting point:
 ## Template Usage
 
 1. Click **[Use this template](https://github.com/IQKV/foundation-ai-chat-service/generate)** to create your repository
-2. Replace all `aichat` / `AiChatService` occurrences with your service name
+2. Replace all `aichat` / `AiChatService` tokens with your service name (see the token map in `foundation-microservice-project-layout`)
 3. Update `pom.xml` — `artifactId`, `name`, `description`, `start-class`
 4. Rename the Java package from `com.iqkv.foundation.aichatservice` to your package
-5. Remove unused dependencies from `pom.xml` (e.g. `shedlock` if no scheduled jobs needed)
-6. Update this `README.md` — see `README.template.md` for the target structure
+5. Adjust or extend the Spring AI chat feature to fit your use case
+6. Remove unused dependencies from `pom.xml` (e.g. `shedlock` if no scheduled jobs needed)
 
 ## Quick Links
 
@@ -34,6 +35,7 @@ This template gives you a production-ready starting point:
 ## Tech Stack
 
 - Java 25 / Spring Boot (latest via parent POM)
+- Spring AI (OpenAI-compatible chat client)
 - MyBatis 3.x (no JPA) + PostgreSQL 17
 - Liquibase for schema migrations
 - RabbitMQ for async messaging
@@ -52,7 +54,7 @@ This template gives you a production-ready starting point:
 ## Quick Start
 
 ```bash
-# Clone / use template
+# Clone or use as template
 git clone https://github.com/IQKV/foundation-ai-chat-service.git my-service
 cd my-service
 
@@ -76,21 +78,21 @@ docker compose up -d
 
 ## Environment Variables
 
-| Variable            | Default               | Description           |
-| ------------------- | --------------------- | --------------------- |
-| `DB_HOST`           | `localhost`           | PostgreSQL host       |
-| `DB_PORT`           | `5432`                | PostgreSQL port       |
-| `DB_NAME`           | `aichat`         | Database name         |
-| `DB_USERNAME`       | `svc_aichat_dba` | Database user         |
-| `DB_PASSWORD`       | `svc_aichat_dba` | Database password     |
-| `RABBITMQ_HOST`     | `localhost`           | RabbitMQ host         |
-| `RABBITMQ_PORT`     | `5672`                | RabbitMQ AMQP port    |
-| `RABBITMQ_USERNAME` | `svc_aichat_rmq` | RabbitMQ user         |
-| `RABBITMQ_PASSWORD` | `svc_aichat_rmq` | RabbitMQ password     |
-| `MAIL_HOST`         | `localhost`           | SMTP host (MailHog)   |
-| `MAIL_PORT`         | `1025`                | SMTP port             |
-| `MAIL_FROM`         | `noreply@iqkv.dev`    | Default sender email  |
-| `ROLLOUT_MODE`      | `MULTI_TENANT`        | Platform rollout mode |
+| Variable            | Default            | Description           |
+| ------------------- | ------------------ | --------------------- |
+| `DB_HOST`           | `localhost`        | PostgreSQL host       |
+| `DB_PORT`           | `5432`             | PostgreSQL port       |
+| `DB_NAME`           | `aichat`           | Database name         |
+| `DB_USERNAME`       | `svc_aichat_dba`   | Database user         |
+| `DB_PASSWORD`       | `svc_aichat_dba`   | Database password     |
+| `RABBITMQ_HOST`     | `localhost`        | RabbitMQ host         |
+| `RABBITMQ_PORT`     | `5672`             | RabbitMQ AMQP port    |
+| `RABBITMQ_USERNAME` | `svc_aichat_rmq`   | RabbitMQ user         |
+| `RABBITMQ_PASSWORD` | `svc_aichat_rmq`   | RabbitMQ password     |
+| `MAIL_HOST`         | `localhost`        | SMTP host (MailHog)   |
+| `MAIL_PORT`         | `1025`             | SMTP port             |
+| `MAIL_FROM`         | `noreply@iqkv.dev` | Default sender email  |
+| `ROLLOUT_MODE`      | `MULTI_TENANT`     | Platform rollout mode |
 
 > Copy `.env.example` to `.env.local` / `.env.uat` / `.env.prd` and fill in values per environment.
 
@@ -141,7 +143,7 @@ docker compose -f compose.container.yaml up -d
 │   ├── postgres/       # DB initialization scripts
 │   ├── prometheus/     # Prometheus configuration
 │   └── grafana/        # Grafana dashboards and datasources
-├── src/main/java/com/iqkv/foundation/aichat/
+├── src/main/java/com/iqkv/foundation/aichatservice/
 │   ├── {domain}/       # Feature module (vertical slice)
 │   │   ├── {Entity}.java
 │   │   ├── {Entity}Service.java
@@ -157,7 +159,7 @@ This project is licensed under the Apache License. See the [LICENSE](LICENSE) fi
 
 ## Branch Strategy
 
-> **Template note:** This is the default strategy shipped with the template. Replace it with whatever model fits your team (Gitflow, GitHub Flow, environment branches, etc.) — update branch names, CI triggers, and protection rules to match.
+> **Template note:** The strategy below is the default shipped with this template. Replace it with whatever model fits your team — update branch names, CI triggers, and protection rules to match.
 
 This template uses **scaled trunk-based development**:
 
@@ -180,8 +182,9 @@ Please read our [Contributing Guidelines](.github/CONTRIBUTING.md) and [Code of 
 
 ---
 
-## 🧩 Boilerplate Architecture
+## 🧩 Architecture
 
+- **Spring AI**: Chat client wired to an OpenAI-compatible backend; swap provider via `spring.ai.*` config
 - **Persistence**: MyBatis with XML mappers + PostgreSQL; Liquibase manages schema migrations; `demo` context for seed data in local/sit/uat
 - **Messaging**: RabbitMQ consumer/publisher; `iqkv.messaging.rabbitmq.enabled` toggle — disabled in base, enabled per profile
 - **Security**: Spring Security + OAuth2 Resource Server; RS256 JWT validated via public key; `@PreAuthorize` on every endpoint

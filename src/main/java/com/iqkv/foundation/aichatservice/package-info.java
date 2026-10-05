@@ -15,7 +15,7 @@
  */
 
 /**
- * Application root package for the Ai Chat Service.
+ * Application root package for the AI Chat Service.
  */
 
 package com.iqkv.foundation.aichatservice;

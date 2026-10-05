@@ -48,8 +48,8 @@ public class OpenApiConfig {
   public OpenAPI openAPI() {
     return new OpenAPI()
         .info(new Info()
-            .title("Ai Chat Service API")
-            .description("Ai Chat Service — replace this description when scaffolding a new service")
+            .title("AI Chat Service API")
+            .description("Foundation AI Chat Service — Spring AI integration template for LLM-backed chat on the iQ Key Value platform")
             .version("1.0.0"))
         .addServersItem(new Server().url("/").description("Default"))
         .addSecurityItem(new SecurityRequirement().addList("bearerAuth"));

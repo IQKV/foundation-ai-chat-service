@@ -23,7 +23,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 /**
- * Entry point for the Ai Chat Service.
+ * Entry point for the AI Chat Service.
  *
  * <p>When scaffolding a new service from this template, replace:
  * <ul>

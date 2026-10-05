@@ -1,5 +1,5 @@
 services:
-  # PostgreSQL Database for Ai Chat Service - Local Development
+  # PostgreSQL Database for AI Chat Service - Local Development
   postgres-aichat:
     image: postgres:17-alpine
     container_name: foundation-aichat-postgres-dev
@@ -40,7 +40,7 @@ services:
       -c min_wal_size=1GB
       -c max_wal_size=4GB
 
-  # RabbitMQ for Ai Chat Service - Local Development
+  # RabbitMQ for AI Chat Service - Local Development
   rabbitmq-aichat:
     image: rabbitmq:3.13-management-alpine
     container_name: foundation-aichat-rabbitmq-dev
@@ -238,8 +238,9 @@ networks:
         #   172.23.0.0/16  — foundation-gateway-service
         #   172.24.0.0/16  — foundation-cms-service
         #   172.25.0.0/16  — foundation-audit-service
-        #   172.26.0.0/16  — next available
-        - subnet: 172.20.0.0/16
+        #   172.26.0.0/16  — foundation-ai-chat-service
+        #   172.27.0.0/16  — next available
+        - subnet: 172.26.0.0/16
 
 volumes:
   postgres_aichat_data:

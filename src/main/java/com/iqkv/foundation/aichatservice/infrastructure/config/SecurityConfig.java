@@ -46,7 +46,7 @@ import org.springframework.security.oauth2.server.resource.web.authentication.Be
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
- * Security configuration for the Ai Chat Service.
+ * Security configuration for the AI Chat Service.
  *
  * <p>This service is a stateless JWT resource server. It verifies tokens issued
  * by the IAM service and delegates to Spring Security's built-in

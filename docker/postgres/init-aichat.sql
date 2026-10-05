@@ -1,4 +1,4 @@
--- Initialize Ai Chat Service Database
+-- Initialize AI Chat Service Database
 -- This script runs when the PostgreSQL container starts for the first time
 
 -- Create additional schemas
@@ -25,4 +25,4 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
-SELECT 'Ai Chat Service Database initialized successfully' AS status;
+SELECT 'AI Chat Service Database initialized successfully' AS status;
