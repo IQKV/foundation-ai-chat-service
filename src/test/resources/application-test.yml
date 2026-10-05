@@ -18,7 +18,7 @@ spring:
 
 iqkv:
   liquibase:
-    tenant-runner-enabled: false  # Disables TenantLiquibaseRunner on startup; tests manage schema setup themselves
+    tenant-runner-enabled: false # Disables TenantLiquibaseRunner on startup; tests manage schema setup themselves
   messaging:
     rabbitmq:
       enabled: false
