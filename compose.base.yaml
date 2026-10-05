@@ -1,23 +1,23 @@
 services:
-  # PostgreSQL Database for Servicename - Local Development
-  postgres-servicename:
+  # PostgreSQL Database for Ai Chat Service - Local Development
+  postgres-aichat:
     image: postgres:17-alpine
-    container_name: foundation-servicename-postgres-dev
+    container_name: foundation-aichat-postgres-dev
     environment:
-      POSTGRES_DB: servicename
-      POSTGRES_USER: svc_servicename_dba
-      POSTGRES_PASSWORD: svc_servicename_dba
+      POSTGRES_DB: aichat
+      POSTGRES_USER: svc_aichat_dba
+      POSTGRES_PASSWORD: svc_aichat_dba
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=C --lc-ctype=C"
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "5432:5432"
     volumes:
-      - postgres_servicename_data:/var/lib/postgresql/data
-      - ./docker/postgres/init-servicename.sql:/docker-entrypoint-initdb.d/init-servicename.sql:ro
+      - postgres_aichat_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-aichat.sql:/docker-entrypoint-initdb.d/init-aichat.sql:ro
     networks:
-      - servicename-service-network
+      - aichat-service-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U svc_servicename_dba -d servicename -h localhost"]
+      test: ["CMD-SHELL", "pg_isready -U svc_aichat_dba -d aichat -h localhost"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -40,22 +40,22 @@ services:
       -c min_wal_size=1GB
       -c max_wal_size=4GB
 
-  # RabbitMQ for Servicename - Local Development
-  rabbitmq-servicename:
+  # RabbitMQ for Ai Chat Service - Local Development
+  rabbitmq-aichat:
     image: rabbitmq:3.13-management-alpine
-    container_name: foundation-servicename-rabbitmq-dev
+    container_name: foundation-aichat-rabbitmq-dev
     environment:
-      RABBITMQ_DEFAULT_USER: svc_servicename_rmq
-      RABBITMQ_DEFAULT_PASS: svc_servicename_rmq
+      RABBITMQ_DEFAULT_USER: svc_aichat_rmq
+      RABBITMQ_DEFAULT_PASS: svc_aichat_rmq
       RABBITMQ_DEFAULT_VHOST: /
       RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: -rabbit log_levels [{connection,error},{default,info}] disk_free_limit 2147483648
     ports:
       - "5672:5672" # AMQP port
       - "15672:15672" # Management UI
     volumes:
-      - rabbitmq_servicename_data:/var/lib/rabbitmq
+      - rabbitmq_aichat_data:/var/lib/rabbitmq
     networks:
-      - servicename-service-network
+      - aichat-service-network
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 30s
@@ -67,18 +67,18 @@ services:
   # MailHog for local email testing
   mailhog:
     image: mailhog/mailhog:v1.0.1
-    container_name: foundation-servicename-mailhog-dev
+    container_name: foundation-aichat-mailhog-dev
     ports:
       - "1025:1025" # SMTP
       - "8025:8025" # Web UI
     networks:
-      - servicename-service-network
+      - aichat-service-network
     restart: unless-stopped
 
   # DbGate - Database Administration Tool
   dbgate:
     image: dbgate/dbgate:5.3.3
-    container_name: foundation-servicename-dbgate-dev
+    container_name: foundation-aichat-dbgate-dev
     environment:
       WEB_ROOT: /
       LOGINS: "1"
@@ -86,13 +86,13 @@ services:
       - "3100:3000" # DbGate Web UI (port 3100 to avoid conflict with Grafana)
     volumes:
       - ./docker/dbgate/connections.jsonl:/root/.dbgate/connections.jsonl:ro
-      - dbgate_servicename_data:/root/.dbgate
+      - dbgate_aichat_data:/root/.dbgate
     networks:
-      - servicename-service-network
+      - aichat-service-network
     depends_on:
-      postgres-servicename:
+      postgres-aichat:
         condition: service_healthy
-      rabbitmq-servicename:
+      rabbitmq-aichat:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
@@ -102,31 +102,31 @@ services:
       start_period: 30s
     restart: unless-stopped
 
-  # Servicename - Local Development
-  servicename-service:
+  # AiChatService - Local Development
+  aichat-service:
     build:
       context: .
       dockerfile: ./Dockerfile
       target: builder
-    image: iqkv/foundation-servicename-service:local
-    container_name: foundation-servicename-service-dev
+    image: iqkv/foundation-ai-chat-service:local
+    container_name: foundation-ai-chat-service-dev
     environment:
       # Spring Configuration
       SPRING_PROFILES_ACTIVE: local
-      SPRING_APPLICATION_NAME: foundation-servicename-service
+      SPRING_APPLICATION_NAME: foundation-ai-chat-service
 
       # Database Configuration
-      DB_HOST: postgres-servicename
+      DB_HOST: postgres-aichat
       DB_PORT: 5432
-      DB_NAME: servicename
-      DB_USERNAME: svc_servicename_dba
-      DB_PASSWORD: svc_servicename_dba
+      DB_NAME: aichat
+      DB_USERNAME: svc_aichat_dba
+      DB_PASSWORD: svc_aichat_dba
 
       # RabbitMQ Configuration
-      RABBITMQ_HOST: rabbitmq-servicename
+      RABBITMQ_HOST: rabbitmq-aichat
       RABBITMQ_PORT: 5672
-      RABBITMQ_USERNAME: svc_servicename_rmq
-      RABBITMQ_PASSWORD: svc_servicename_rmq
+      RABBITMQ_USERNAME: svc_aichat_rmq
+      RABBITMQ_PASSWORD: svc_aichat_rmq
 
       # Mail Configuration (MailHog)
       MAIL_HOST: mailhog
@@ -137,8 +137,8 @@ services:
       MAIL_REPLY_TO: ""
 
       # Observability
-      OTEL_SERVICE_NAME: foundation-servicename-service
-      OTEL_RESOURCE_ATTRIBUTES: service.name=foundation-servicename-service,service.version=1.0.0,deployment.environment=dev
+      OTEL_SERVICE_NAME: foundation-ai-chat-service
+      OTEL_RESOURCE_ATTRIBUTES: service.name=foundation-ai-chat-service,service.version=1.0.0,deployment.environment=dev
 
       # JVM Configuration
       JAVA_OPTS: >-
@@ -155,15 +155,15 @@ services:
       JWT_PUBLIC_KEY_PATH: "classpath:keys/public.pem"
       JWT_JWKS_URI: ""
     ports:
-      - "8080:8080" # Servicename API
+      - "8080:8080" # AiChatService API
       - "8081:8081" # Actuator / management
     depends_on:
-      postgres-servicename:
+      postgres-aichat:
         condition: service_healthy
-      rabbitmq-servicename:
+      rabbitmq-aichat:
         condition: service_healthy
     networks:
-      - servicename-service-network
+      - aichat-service-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health/readiness"]
       interval: 30s
@@ -172,8 +172,8 @@ services:
       start_period: 90s
     restart: unless-stopped
     volumes:
-      - servicename_logs:/app/logs
-      - servicename_tmp:/app/tmp
+      - aichat_logs:/app/logs
+      - aichat_tmp:/app/tmp
     deploy:
       resources:
         limits:
@@ -186,32 +186,32 @@ services:
   # SonarQube for code quality analysis
   sonar:
     image: sonarqube:25.3.0.104237-community
-    container_name: foundation-servicename-sonarqube-dev
+    container_name: foundation-aichat-sonarqube-dev
     environment:
       - SONAR_FORCEAUTHENTICATION=false
     ports:
       - "127.0.0.1:9001:9000"
       - "127.0.0.1:9000:9000"
     networks:
-      - servicename-service-network
+      - aichat-service-network
     restart: unless-stopped
 
   # Prometheus for metrics collection
   prometheus:
     image: prom/prometheus:latest
-    container_name: foundation-servicename-prometheus-dev
+    container_name: foundation-aichat-prometheus-dev
     volumes:
       - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
     networks:
-      - servicename-service-network
+      - aichat-service-network
     restart: unless-stopped
 
   # Grafana for metrics visualization
   grafana:
     image: grafana/grafana:latest
-    container_name: foundation-servicename-grafana-dev
+    container_name: foundation-aichat-grafana-dev
     volumes:
       - ./docker/grafana/provisioning:/etc/grafana/provisioning
     environment:
@@ -221,13 +221,13 @@ services:
     depends_on:
       - prometheus
     networks:
-      - servicename-service-network
+      - aichat-service-network
     restart: unless-stopped
 
 networks:
-  servicename-service-network:
+  aichat-service-network:
     driver: bridge
-    name: foundation-servicename-service-network-dev
+    name: foundation-ai-chat-service-network-dev
     ipam:
       config:
         # Pick a unique /16 block for each new service to avoid subnet conflicts.
@@ -242,18 +242,18 @@ networks:
         - subnet: 172.20.0.0/16
 
 volumes:
-  postgres_servicename_data:
-    name: iqkv_servicename_postgres_data_dev
+  postgres_aichat_data:
+    name: iqkv_aichat_postgres_data_dev
     driver: local
-  rabbitmq_servicename_data:
-    name: iqkv_servicename_rabbitmq_data_dev
+  rabbitmq_aichat_data:
+    name: iqkv_aichat_rabbitmq_data_dev
     driver: local
-  dbgate_servicename_data:
-    name: iqkv_servicename_dbgate_data_dev
+  dbgate_aichat_data:
+    name: iqkv_aichat_dbgate_data_dev
     driver: local
-  servicename_logs:
-    name: iqkv_servicename_logs_dev
+  aichat_logs:
+    name: iqkv_aichat_logs_dev
     driver: local
-  servicename_tmp:
-    name: iqkv_servicename_tmp_dev
+  aichat_tmp:
+    name: iqkv_aichat_tmp_dev
     driver: local

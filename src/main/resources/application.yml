@@ -4,7 +4,7 @@
 
 spring:
   application:
-    name: foundation-servicename-service
+    name: foundation-ai-chat-service
   datasource:
     url: jdbc:postgresql://${iqkv.db.host}:${iqkv.db.port}/${iqkv.db.name}
     username: ${iqkv.db.username}
@@ -60,14 +60,14 @@ iqkv:
   db:
     host: ${DB_HOST:localhost}
     port: ${DB_PORT:5432}
-    name: ${DB_NAME:servicename}
-    username: ${DB_USERNAME:svc_servicename_dba}
-    password: ${DB_PASSWORD:svc_servicename_dba}
+    name: ${DB_NAME:aichat}
+    username: ${DB_USERNAME:svc_aichat_dba}
+    password: ${DB_PASSWORD:svc_aichat_dba}
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}
     port: ${RABBITMQ_PORT:5672}
-    username: ${RABBITMQ_USERNAME:svc_servicename_rmq}
-    password: ${RABBITMQ_PASSWORD:svc_servicename_rmq}
+    username: ${RABBITMQ_USERNAME:svc_aichat_rmq}
+    password: ${RABBITMQ_PASSWORD:svc_aichat_rmq}
   messaging:
     rabbitmq:
       # Controlled via MESSAGING_ENABLED env var; defaults to false for local safety.

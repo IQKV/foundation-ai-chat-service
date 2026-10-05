@@ -10,17 +10,17 @@ This template gives you a production-ready starting point:
 - **Multi-profile Spring config** — `local`, `sit`, `uat`, `prd` profiles with correct defaults per environment
 - **Docker Compose** — `compose.base.yaml` with PostgreSQL, RabbitMQ, MailHog, SonarQube, Prometheus, and Grafana; `compose.container.yaml` for full runtime stack including the service container
 - **Dockerfile** — multi-stage build with layered JAR extraction, non-root `appuser`, and JVM tuning
-- **Database Initialization** — `docker/postgres/init-servicename.sql` for automated schema and extension setup
+- **Database Initialization** — `docker/postgres/init-aichat.sql` for automated schema and extension setup
 - **Security** — Spring Security + OAuth2 Resource Server (RS256 JWT) pre-configured
 - **Observability** — Micrometer + Prometheus + structured JSON logging (Logstash encoder)
 - **Quality tools** — Checkstyle, JaCoCo, ArchUnit, Husky git hooks, commitlint
 
 ## Template Usage
 
-1. Click **[Use this template](https://github.com/IQKV/foundation-microservice-project-layout/generate)** to create your repository
-2. Replace all `servicename` / `Servicename` occurrences with your service name
+1. Click **[Use this template](https://github.com/IQKV/foundation-ai-chat-service/generate)** to create your repository
+2. Replace all `aichat` / `AiChatService` occurrences with your service name
 3. Update `pom.xml` — `artifactId`, `name`, `description`, `start-class`
-4. Rename the Java package from `com.iqkv.foundation.servicename` to your package
+4. Rename the Java package from `com.iqkv.foundation.aichatservice` to your package
 5. Remove unused dependencies from `pom.xml` (e.g. `shedlock` if no scheduled jobs needed)
 6. Update this `README.md` — see `README.template.md` for the target structure
 
@@ -53,7 +53,7 @@ This template gives you a production-ready starting point:
 
 ```bash
 # Clone / use template
-git clone https://github.com/IQKV/foundation-microservice-project-layout.git my-service
+git clone https://github.com/IQKV/foundation-ai-chat-service.git my-service
 cd my-service
 
 # Install git hooks
@@ -80,13 +80,13 @@ docker compose up -d
 | ------------------- | --------------------- | --------------------- |
 | `DB_HOST`           | `localhost`           | PostgreSQL host       |
 | `DB_PORT`           | `5432`                | PostgreSQL port       |
-| `DB_NAME`           | `servicename`         | Database name         |
-| `DB_USERNAME`       | `svc_servicename_dba` | Database user         |
-| `DB_PASSWORD`       | `svc_servicename_dba` | Database password     |
+| `DB_NAME`           | `aichat`         | Database name         |
+| `DB_USERNAME`       | `svc_aichat_dba` | Database user         |
+| `DB_PASSWORD`       | `svc_aichat_dba` | Database password     |
 | `RABBITMQ_HOST`     | `localhost`           | RabbitMQ host         |
 | `RABBITMQ_PORT`     | `5672`                | RabbitMQ AMQP port    |
-| `RABBITMQ_USERNAME` | `svc_servicename_rmq` | RabbitMQ user         |
-| `RABBITMQ_PASSWORD` | `svc_servicename_rmq` | RabbitMQ password     |
+| `RABBITMQ_USERNAME` | `svc_aichat_rmq` | RabbitMQ user         |
+| `RABBITMQ_PASSWORD` | `svc_aichat_rmq` | RabbitMQ password     |
 | `MAIL_HOST`         | `localhost`           | SMTP host (MailHog)   |
 | `MAIL_PORT`         | `1025`                | SMTP port             |
 | `MAIL_FROM`         | `noreply@iqkv.dev`    | Default sender email  |
@@ -117,7 +117,7 @@ docker compose up -d
 
 ```bash
 # Build image
-docker build -t iqkv/servicename:latest .
+docker build -t iqkv/aichat:latest .
 
 # Run full stack (service + dependencies)
 docker compose -f compose.container.yaml up -d
@@ -141,7 +141,7 @@ docker compose -f compose.container.yaml up -d
 │   ├── postgres/       # DB initialization scripts
 │   ├── prometheus/     # Prometheus configuration
 │   └── grafana/        # Grafana dashboards and datasources
-├── src/main/java/com/iqkv/foundation/servicename/
+├── src/main/java/com/iqkv/foundation/aichat/
 │   ├── {domain}/       # Feature module (vertical slice)
 │   │   ├── {Entity}.java
 │   │   ├── {Entity}Service.java

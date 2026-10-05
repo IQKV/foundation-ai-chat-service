@@ -8,10 +8,10 @@
         <version>0.24.30</version>
     </parent>
     <groupId>com.iqkv</groupId>
-    <artifactId>foundation-servicename-service</artifactId>
+    <artifactId>foundation-ai-chat-service</artifactId>
     <version>0.3.0-SNAPSHOT</version>
-    <name>Servicename Backend</name>
-    <description>API for implementing servicename.</description>
+    <name>AI Chat Service</name>
+    <description>Minimal chat microservice using Spring AI.</description>
     <developers>
 
     </developers>
@@ -23,7 +23,7 @@
         <checkstyle.skip>false</checkstyle.skip>
         <maven.gitcommitid.skip>false</maven.gitcommitid.skip>
         <jacoco.skip>true</jacoco.skip>
-        <start-class>com.iqkv.foundation.servicename.ServicenameApplication</start-class>
+        <start-class>com.iqkv.foundation.aichatservice.AiChatServiceApplication</start-class>
     </properties>
 
     <dependencies>

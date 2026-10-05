@@ -1,7 +1,7 @@
 # Scaffolding a New Service from This Template
 
 This document lists every token that must be replaced when creating a new
-foundation service from `foundation-microservice-project-layout`.
+foundation service from `foundation-ai-chat-service`.
 
 ---
 
@@ -12,15 +12,13 @@ The example column uses a hypothetical **reporting** service.
 
 | Token                             | Kind                                       | Example replacement                    |
 | --------------------------------- | ------------------------------------------ | -------------------------------------- |
-| `servicename`                     | lowercase slug                             | `reporting`                            |
-| `Servicename`                     | PascalCase                                 | `Reporting`                            |
+| `aichat`                     | lowercase slug                             | `reporting`                            |
+| `AiChatService`                     | PascalCase                                 | `Reporting`                            |
 | `SERVICENAME`                     | UPPER_CASE (env var prefixes, queue names) | `REPORTING`                            |
-| `foundation-servicename-service`  | kebab-case artifact/image/app name         | `foundation-reporting-service`         |
-| `com.iqkv.foundation.servicename` | Java base package                          | `com.iqkv.foundation.reportingservice` |
-| `svc_servicename_dba`             | Postgres DB user                           | `svc_reporting_dba`                    |
-| `svc_servicename_rmq`             | RabbitMQ user                              | `svc_reporting_rmq`                    |
-| `iqkv.servicename.*`              | RabbitMQ queue name prefix                 | `iqkv.reporting.*`                     |
-| `Servicename Service API`         | OpenAPI title in `OpenApiConfig`           | `Reporting Service API`                |
+| `svc_aichat_dba`             | Postgres DB user                           | `svc_aichat_dba`                    |
+| `svc_aichat_rmq`             | RabbitMQ user                              | `svc_aichat_rmq`                    |
+| `iqkv.aichat.*`              | RabbitMQ queue name prefix                 | `iqkv.aichat.*`                     |
+| `Ai Chat Service API`         | OpenAPI title in `OpenApiConfig`           | `Reporting Service API`                |
 
 ---
 
@@ -29,8 +27,8 @@ The example column uses a hypothetical **reporting** service.
 ### 1. Copy and rename the repository
 
 ```
-cp -r foundation-microservice-project-layout foundation-reporting-service
-cd foundation-reporting-service
+cp -r foundation-ai-chat-service foundation-ai-chat-service
+cd foundation-ai-chat-service
 ```
 
 ### 2. Global text replacement
@@ -40,15 +38,12 @@ preferred tool). Apply them **in this order** — longer/more-specific tokens fi
 to avoid partial matches.
 
 ```
-com.iqkv.foundation.servicename  →  com.iqkv.foundation.reportingservice
-foundation-servicename-service   →  foundation-reporting-service
-iqkv.servicename.                →  iqkv.reporting.
-svc_servicename_dba              →  svc_reporting_dba
-svc_servicename_rmq              →  svc_reporting_rmq
-ServicenameApplication           →  ReportingApplication
-Servicename Service API          →  Reporting Service API
-servicename                      →  reporting
-Servicename                      →  Reporting
+
+svc_aichat_dba              →  svc_aichat_dba
+svc_aichat_rmq              →  svc_aichat_rmq
+Ai Chat Service API          →  Reporting Service API
+aichat                      →  aichat
+AiChatService                      →  Reporting
 ```
 
 > **Tip — IntelliJ IDEA:** `Edit → Find → Replace in Files…`,
@@ -57,27 +52,27 @@ Servicename                      →  Reporting
 > **Tip — shell (Linux/macOS):**
 >
 > ```bash
-> grep -rl 'servicename' . | xargs sed -i 's/servicename/reporting/g'
+> grep -rl 'aichat' . | xargs sed -i 's/aichat/reporting/g'
 > ```
 >
-> Run the more-specific patterns before the generic `servicename` one.
+> Run the more-specific patterns before the generic `aichat` one.
 
 ### 3. Rename files and directories
 
-Rename any file or directory whose name contains `servicename`:
+Rename any file or directory whose name contains `aichat`:
 
 | From                                   | To                                                        |
 | -------------------------------------- | --------------------------------------------------------- |
-| `src/.../servicename/`                 | `src/.../reportingservice/`                               |
-| `ServicenameApplication.java`          | `ReportingApplication.java`                               |
-| `docker/postgres/init-servicename.sql` | `docker/postgres/init-reporting.sql`                      |
+| `src/.../aichat/`                 | `src/.../reportingservice/`                               |
+| `AiChatServiceApplication.java`          | `ReportingApplication.java`                               |
+| `docker/postgres/init-aichat.sql` | `docker/postgres/init-reporting.sql`                      |
 | `docker/dbgate/connections.jsonl`      | update `server`, `user`, `database`, `displayName` fields |
 
 ### 4. Update `pom.xml`
 
 | Field           | Value                          |
 | --------------- | ------------------------------ |
-| `<artifactId>`  | `foundation-reporting-service` |
+| `<artifactId>`  | `foundation-ai-chat-service` |
 | `<name>`        | `Foundation Reporting Service` |
 | `<description>` | your service description       |
 
@@ -86,9 +81,9 @@ Rename any file or directory whose name contains `servicename`:
 All three files were already processed by the global replacement in step 2.
 Double-check:
 
-- Service keys: `postgres-reporting-service`, `rabbitmq-reporting-service`, `reporting-service`
-- Network name: `foundation-reporting-network-dev`
-- Volume names: `iqkv_reporting_postgres_data_dev`, etc.
+- Service keys: `postgres-aichat-service`, `rabbitmq-aichat-service`, `reporting-service`
+- Network name: `foundation-aichat-network-dev`
+- Volume names: `iqkv_aichat_postgres_data_dev`, etc.
 - Subnet: pick the next free `/16` block — see the comment in `compose.base.yaml`
   under `networks.reporting-service-network.ipam`
 
@@ -112,7 +107,7 @@ In `TenantExtractionFilter.java`, update `shouldNotFilter` for both the public a
 
 ### 8. Update `RabbitMQConfig`
 
-Queue name constants use `iqkv.reporting.*` after the global replacement.
+Queue name constants use `iqkv.aichat.*` after the global replacement.
 Review and add any domain-specific queues and routing keys the service needs.
 
 ### 9. Update `OpenApiConfig`
@@ -127,16 +122,16 @@ Review and add any domain-specific queues and routing keys the service needs.
 ```yaml
 spring:
     application:
-        name: foundation-reporting-service
+        name: foundation-ai-chat-service
 
 iqkv:
     db:
         name: ${DB_NAME:reportingservice}
-        username: ${DB_USERNAME:svc_reporting_dba}
-        password: ${DB_PASSWORD:svc_reporting_dba}
+        username: ${DB_USERNAME:svc_aichat_dba}
+        password: ${DB_PASSWORD:svc_aichat_dba}
     rabbitmq:
-        username: ${RABBITMQ_USERNAME:svc_reporting_rmq}
-        password: ${RABBITMQ_PASSWORD:svc_reporting_rmq}
+        username: ${RABBITMQ_USERNAME:svc_aichat_rmq}
+        password: ${RABBITMQ_PASSWORD:svc_aichat_rmq}
 ```
 
 ### 11. Update `docker/postgres/init-reporting.sql`
@@ -179,9 +174,9 @@ rm scaffolding.md
 - [ ] Java base package renamed (`com.iqkv.foundation.reportingservice`)
 - [ ] Main application class renamed (`ReportingApplication`)
 - [ ] `spring.application.name` in `application.yml` updated
-- [ ] DB credentials (`svc_reporting_dba`) updated in `application.yml` and SQL init script
-- [ ] RabbitMQ credentials (`svc_reporting_rmq`) updated in `application.yml`
-- [ ] RabbitMQ queue names updated in `RabbitMQConfig` (`iqkv.reporting.*`)
+- [ ] DB credentials (`svc_aichat_dba`) updated in `application.yml` and SQL init script
+- [ ] RabbitMQ credentials (`svc_aichat_rmq`) updated in `application.yml`
+- [ ] RabbitMQ queue names updated in `RabbitMQConfig` (`iqkv.aichat.*`)
 - [ ] `SecurityConfig` admin path updated (`/api/v1/reporting/admin/**`)
 - [ ] `TenantExtractionFilter` admin skip path updated
 - [ ] `OpenApiConfig` title and description updated

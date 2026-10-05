@@ -1,15 +1,15 @@
 services:
-  # PostgreSQL Database for Servicename
-  postgres-servicename:
+  # PostgreSQL Database for Ai Chat Service
+  postgres-aichat:
     extends:
       file: compose.base.yaml
-      service: postgres-servicename
+      service: postgres-aichat
 
-  # RabbitMQ for Servicename
-  rabbitmq-servicename:
+  # RabbitMQ for Ai Chat Service
+  rabbitmq-aichat:
     extends:
       file: compose.base.yaml
-      service: rabbitmq-servicename
+      service: rabbitmq-aichat
 
   # MailHog for local email testing
   mailhog:
@@ -23,25 +23,25 @@ services:
       file: compose.base.yaml
       service: dbgate
 
-  # Servicename - Full platform run including build phase
-  servicename-service:
+  # AiChatService - Full platform run including build phase
+  aichat-service:
     extends:
       file: compose.base.yaml
-      service: servicename-service
+      service: aichat-service
 
 networks:
-  servicename-service-network:
-    name: foundation-servicename-network-dev
+  aichat-service-network:
+    name: foundation-aichat-network-dev
     external: false
 
 volumes:
-  postgres_servicename_data:
-    name: iqkv_servicename_postgres_data_dev
-  rabbitmq_servicename_data:
-    name: iqkv_servicename_rabbitmq_data_dev
-  dbgate_servicename_data:
-    name: iqkv_servicename_dbgate_data_dev
-  servicename_logs:
-    name: iqkv_servicename_logs_dev
-  servicename_tmp:
-    name: iqkv_servicename_tmp_dev
+  postgres_aichat_data:
+    name: iqkv_aichat_postgres_data_dev
+  rabbitmq_aichat_data:
+    name: iqkv_aichat_rabbitmq_data_dev
+  dbgate_aichat_data:
+    name: iqkv_aichat_dbgate_data_dev
+  aichat_logs:
+    name: iqkv_aichat_logs_dev
+  aichat_tmp:
+    name: iqkv_aichat_tmp_dev
