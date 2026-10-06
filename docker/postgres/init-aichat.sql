@@ -2,17 +2,17 @@
 -- This script runs when the PostgreSQL container starts for the first time
 
 -- Create additional schemas
-CREATE SCHEMA IF NOT EXISTS aichat;
+CREATE SCHEMA IF NOT EXISTS aichatservice;
 
 -- Set default search path
-ALTER DATABASE aichat SET search_path TO public, aichat;
+ALTER DATABASE aichatservice SET search_path TO public, aichat;
 
 -- Create extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pg_stat_statements";
 
 -- Grant permissions
-GRANT ALL PRIVILEGES ON DATABASE aichat TO svc_aichat_dba;
+GRANT ALL PRIVILEGES ON DATABASE aichatservice TO svc_aichat_dba;
 GRANT ALL PRIVILEGES ON SCHEMA public TO svc_aichat_dba;
 GRANT ALL PRIVILEGES ON SCHEMA aichat TO svc_aichat_dba;
 

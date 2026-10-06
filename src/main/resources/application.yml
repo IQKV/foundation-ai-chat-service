@@ -66,7 +66,7 @@ iqkv:
   db:
     host: ${DB_HOST:localhost}
     port: ${DB_PORT:5432}
-    name: ${DB_NAME:aichat}
+    name: ${DB_NAME:aichatservice}
     username: ${DB_USERNAME:svc_aichat_dba}
     password: ${DB_PASSWORD:svc_aichat_dba}
   rabbitmq:
