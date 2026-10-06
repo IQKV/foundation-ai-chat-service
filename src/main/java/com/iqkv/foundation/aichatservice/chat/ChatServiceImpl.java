@@ -92,7 +92,7 @@ public class ChatServiceImpl implements ChatService {
     final var reply = chatClient.prompt()
         .system(aiProps.systemPrompt())
         .user(userContent)
-        .options(options)
+        .options((org.springframework.ai.chat.prompt.ChatOptions) options)
         .call()
         .content();
 
