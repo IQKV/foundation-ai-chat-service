@@ -50,7 +50,8 @@
             <column name="session_id" type="UUID">
                 <constraints nullable="false"
                              foreignKeyName="fk_chat_messages_session"
-                             references="chat_sessions(id)"/>
+                             references="chat_sessions(id)"
+                             deleteCascade="true"/>
             </column>
             <column name="role" type="VARCHAR(20)">
                 <!-- USER | ASSISTANT | SYSTEM -->
@@ -75,6 +76,27 @@
             <dropIndex tableName="chat_messages" indexName="idx_chat_messages_created_at"/>
             <dropIndex tableName="chat_messages" indexName="idx_chat_messages_session_id"/>
             <dropTable tableName="chat_messages"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Fix FK: add ON DELETE CASCADE so deleting a session removes its messages. -->
+    <changeSet id="20261005100002-fk-chat-messages-cascade-delete" author="iqkv">
+        <dropForeignKeyConstraint baseTableName="chat_messages"
+                                  constraintName="fk_chat_messages_session"/>
+        <addForeignKeyConstraint baseTableName="chat_messages"
+                                 baseColumnNames="session_id"
+                                 constraintName="fk_chat_messages_session"
+                                 referencedTableName="chat_sessions"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+        <rollback>
+            <dropForeignKeyConstraint baseTableName="chat_messages"
+                                      constraintName="fk_chat_messages_session"/>
+            <addForeignKeyConstraint baseTableName="chat_messages"
+                                     baseColumnNames="session_id"
+                                     constraintName="fk_chat_messages_session"
+                                     referencedTableName="chat_sessions"
+                                     referencedColumnNames="id"/>
         </rollback>
     </changeSet>
 
