@@ -21,10 +21,12 @@ import java.util.UUID;
 
 import com.iqkv.foundation.aichatservice.chat.dto.ChatDtoMapper;
 import com.iqkv.foundation.aichatservice.chat.dto.ChatDtos;
+import com.iqkv.foundation.aichatservice.infrastructure.config.AiChatProperties;
 import com.iqkv.foundation.aichatservice.shared.exception.ChatSessionNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.ollama.api.OllamaOptions;
 import org.springframework.ai.retry.NonTransientAiException;
 import org.springframework.stereotype.Service;
 
@@ -37,13 +39,16 @@ public class ChatServiceImpl implements ChatService {
   private final ChatSessionMapper chatSessionMapper;
   private final ChatMessageMapper chatMessageMapper;
   private final ChatClient chatClient;
+  private final AiChatProperties aiProps;
 
   public ChatServiceImpl(final ChatSessionMapper chatSessionMapper,
                          final ChatMessageMapper chatMessageMapper,
-                         final ChatClient chatClient) {
+                         final ChatClient chatClient,
+                         final AiChatProperties aiProps) {
     this.chatSessionMapper = chatSessionMapper;
     this.chatMessageMapper = chatMessageMapper;
     this.chatClient = chatClient;
+    this.aiProps = aiProps;
   }
 
   @Override
@@ -64,16 +69,30 @@ public class ChatServiceImpl implements ChatService {
           .orElseThrow(() -> new ChatSessionNotFoundException(request.sessionId()));
     }
 
+    // Guard: truncate user input to configured max to avoid context blowout
+    final String userContent = request.content().length() > aiProps.maxInputChars()
+        ? request.content().substring(0, aiProps.maxInputChars())
+        : request.content();
+
     final var userMessage = new ChatMessage();
     userMessage.setId(UUID.randomUUID());
     userMessage.setSessionId(session.getId());
     userMessage.setRole(MessageRole.USER);
-    userMessage.setContent(request.content());
+    userMessage.setContent(userContent);
     userMessage.setCreatedAt(Instant.now());
     chatMessageMapper.insert(userMessage);
 
+    // Build per-request options: model, temperature, output token limit
+    final var options = OllamaOptions.builder()
+        .model(session.getModel())
+        .temperature(aiProps.temperature())
+        .numPredict(aiProps.maxOutputTokens())
+        .build();
+
     final var reply = chatClient.prompt()
-        .user(request.content())
+        .system(aiProps.systemPrompt())
+        .user(userContent)
+        .options(options)
         .call()
         .content();
 
@@ -92,7 +111,7 @@ public class ChatServiceImpl implements ChatService {
     session.setUpdatedAt(Instant.now());
     if (session.getTitle() == null) {
       session.setTitle(
-          request.content().length() > 60 ? request.content().substring(0, 60) : request.content()
+          userContent.length() > 60 ? userContent.substring(0, 60) : userContent
       );
     }
     chatSessionMapper.update(session);
