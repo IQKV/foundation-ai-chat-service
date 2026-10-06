@@ -39,7 +39,8 @@ server:
   forward-headers-strategy: framework
   shutdown: graceful
   tomcat:
-    connection-timeout: 5s
+    # Extended for LLM inference — llama3.1:8b can take 60-120s for long responses.
+    connection-timeout: 180s
 
 springdoc:
   api-docs:
