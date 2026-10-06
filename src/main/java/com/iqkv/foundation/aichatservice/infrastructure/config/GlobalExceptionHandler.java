@@ -26,6 +26,7 @@ import com.iqkv.foundation.entitlement.plan.PlanFeatureNotAvailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import org.springframework.ai.retry.NonTransientAiException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -71,6 +72,14 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(pd);
   }
 
+  @ExceptionHandler(NonTransientAiException.class)
+  public ResponseEntity<ProblemDetail> handleNonTransientAi(final NonTransientAiException ex,
+                                                            final HttpServletRequest request) {
+    final String detail = ex.getMessage() != null ? ex.getMessage() : "LLM backend returned an error";
+    log.warn("LLM backend error: {}", detail);
+    final ProblemDetail pd = problem("about:blank", "LLM Backend Error", 502, detail, request);
+    return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(pd);
+  }
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ProblemDetail> handleValidation(final MethodArgumentNotValidException ex,
                                                         final HttpServletRequest request) {

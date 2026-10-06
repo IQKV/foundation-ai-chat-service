@@ -22,13 +22,17 @@ import java.util.UUID;
 import com.iqkv.foundation.aichatservice.chat.dto.ChatDtoMapper;
 import com.iqkv.foundation.aichatservice.chat.dto.ChatDtos;
 import com.iqkv.foundation.aichatservice.shared.exception.ChatSessionNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.retry.NonTransientAiException;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ChatServiceImpl implements ChatService {
 
-  private static final String DEFAULT_MODEL = "llama3.2";
+  private static final Logger log = LoggerFactory.getLogger(ChatServiceImpl.class);
+  private static final String DEFAULT_MODEL = "llama3.1:8b";
 
   private final ChatSessionMapper chatSessionMapper;
   private final ChatMessageMapper chatMessageMapper;
@@ -72,6 +76,10 @@ public class ChatServiceImpl implements ChatService {
         .user(request.content())
         .call()
         .content();
+
+    if (reply == null) {
+      throw new NonTransientAiException("LLM returned empty response");
+    }
 
     final var assistantMessage = new ChatMessage();
     assistantMessage.setId(UUID.randomUUID());
