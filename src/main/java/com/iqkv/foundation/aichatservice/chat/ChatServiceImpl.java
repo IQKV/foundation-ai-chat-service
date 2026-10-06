@@ -83,16 +83,13 @@ public class ChatServiceImpl implements ChatService {
     chatMessageMapper.insert(userMessage);
 
     // Build per-request options: model, temperature, output token limit
-    final var options = OllamaChatOptions.builder()
-        .model(session.getModel())
-        .temperature(aiProps.temperature())
-        .numPredict(aiProps.maxOutputTokens())
-        .build();
-
     final var reply = chatClient.prompt()
         .system(aiProps.systemPrompt())
         .user(userContent)
-        .options((org.springframework.ai.chat.prompt.ChatOptions) options)
+        .options(OllamaChatOptions.builder()
+            .model(session.getModel())
+            .temperature(aiProps.temperature())
+            .numPredict(aiProps.maxOutputTokens()))
         .call()
         .content();
 
