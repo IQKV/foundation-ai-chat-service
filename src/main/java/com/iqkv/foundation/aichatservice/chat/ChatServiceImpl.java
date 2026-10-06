@@ -26,7 +26,7 @@ import com.iqkv.foundation.aichatservice.shared.exception.ChatSessionNotFoundExc
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.ollama.api.OllamaOptions;
+import org.springframework.ai.ollama.api.OllamaChatOptions;
 import org.springframework.ai.retry.NonTransientAiException;
 import org.springframework.stereotype.Service;
 
@@ -83,7 +83,7 @@ public class ChatServiceImpl implements ChatService {
     chatMessageMapper.insert(userMessage);
 
     // Build per-request options: model, temperature, output token limit
-    final var options = OllamaOptions.builder()
+    final var options = OllamaChatOptions.builder()
         .model(session.getModel())
         .temperature(aiProps.temperature())
         .numPredict(aiProps.maxOutputTokens())
