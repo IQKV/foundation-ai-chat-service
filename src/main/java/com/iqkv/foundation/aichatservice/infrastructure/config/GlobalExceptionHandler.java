@@ -80,6 +80,7 @@ public class GlobalExceptionHandler {
     final ProblemDetail pd = problem("about:blank", "LLM Backend Error", 502, detail, request);
     return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(pd);
   }
+
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ProblemDetail> handleValidation(final MethodArgumentNotValidException ex,
                                                         final HttpServletRequest request) {
