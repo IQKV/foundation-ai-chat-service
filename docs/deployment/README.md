@@ -154,28 +154,28 @@ The default model is `llama3.1:8b`. Override via `ai.ollama.model` in values or 
 
 #### Service Configuration
 
-| Setting          | SIT      | UAT      | Production    |
-| ---------------- | -------- | -------- | ------------- |
-| Replicas         | 1        | 1        | 2             |
-| CPU Request      | 300m     | 500m     | 500m          |
-| CPU Limit        | 750m     | 1000m    | 1000m         |
-| Memory Request   | 384Mi    | 512Mi    | 512Mi         |
-| Memory Limit     | 768Mi    | 1Gi      | 1Gi           |
-| Autoscaling      | Disabled | Disabled | 2–10 replicas |
-| Ingress          | Disabled | Disabled | Configurable  |
-| Monitoring       | Disabled | Enabled  | Enabled       |
-| Network Policy   | Disabled | Disabled | Enabled       |
+| Setting        | SIT      | UAT      | Production    |
+| -------------- | -------- | -------- | ------------- |
+| Replicas       | 1        | 1        | 2             |
+| CPU Request    | 300m     | 500m     | 500m          |
+| CPU Limit      | 750m     | 1000m    | 1000m         |
+| Memory Request | 384Mi    | 512Mi    | 512Mi         |
+| Memory Limit   | 768Mi    | 1Gi      | 1Gi           |
+| Autoscaling    | Disabled | Disabled | 2–10 replicas |
+| Ingress        | Disabled | Disabled | Configurable  |
+| Monitoring     | Disabled | Enabled  | Enabled       |
+| Network Policy | Disabled | Disabled | Enabled       |
 
 #### Prompt Engineering Configuration
 
 The system prompt and LLM parameters are configurable per environment without rebuilding the image:
 
-| Helm Value                     | Env Variable            | Default  | Description                              |
-| ------------------------------ | ----------------------- | -------- | ---------------------------------------- |
-| `ai.prompt.systemPrompt`       | `AI_SYSTEM_PROMPT`      | (built-in) | System message injected on every call  |
-| `ai.prompt.maxInputChars`      | `AI_MAX_INPUT_CHARS`    | 4000     | Input character limit                    |
-| `ai.prompt.maxOutputTokens`    | `AI_MAX_OUTPUT_TOKENS`  | 1024     | Max tokens per LLM response              |
-| `ai.prompt.temperature`        | `AI_TEMPERATURE`        | 0.7      | Response creativity (0.0–1.0)            |
+| Helm Value                  | Env Variable           | Default    | Description                           |
+| --------------------------- | ---------------------- | ---------- | ------------------------------------- |
+| `ai.prompt.systemPrompt`    | `AI_SYSTEM_PROMPT`     | (built-in) | System message injected on every call |
+| `ai.prompt.maxInputChars`   | `AI_MAX_INPUT_CHARS`   | 4000       | Input character limit                 |
+| `ai.prompt.maxOutputTokens` | `AI_MAX_OUTPUT_TOKENS` | 1024       | Max tokens per LLM response           |
+| `ai.prompt.temperature`     | `AI_TEMPERATURE`       | 0.7        | Response creativity (0.0–1.0)         |
 
 Override for a specific environment:
 
