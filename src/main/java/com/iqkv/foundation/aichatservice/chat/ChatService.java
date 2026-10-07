@@ -31,4 +31,6 @@ public interface ChatService {
   void deleteSession(UUID sessionId, UUID actorId);
 
   ChatDtos.SessionListResponse getAllSessions(int limit, int offset);
+
+  ChatDtos.MessageListResponse getAdminMessages(UUID sessionId, int limit, int offset);
 }

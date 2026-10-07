@@ -18,11 +18,14 @@ package com.iqkv.foundation.aichatservice.chat;
 
 import com.iqkv.foundation.aichatservice.chat.dto.ChatDtos;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -46,5 +49,16 @@ public class AdminChatRestResource {
       @RequestParam(defaultValue = "20") final int limit,
       @RequestParam(defaultValue = "0") final int offset) {
     return ResponseEntity.ok(chatService.getAllSessions(limit, offset));
+  }
+
+  @GetMapping("/sessions/{sessionId}/messages")
+  @Operation(summary = "Get messages for any session (platform admin)",
+             description = "Returns all messages for the given session regardless of owner. "
+                           + "Returns 404 if the session does not exist.")
+  public ResponseEntity<ChatDtos.MessageListResponse> getMessages(
+      @Parameter(description = "Session UUID") @PathVariable final UUID sessionId,
+      @RequestParam(defaultValue = "50") final int limit,
+      @RequestParam(defaultValue = "0") final int offset) {
+    return ResponseEntity.ok(chatService.getAdminMessages(sessionId, limit, offset));
   }
 }

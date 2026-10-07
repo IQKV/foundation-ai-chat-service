@@ -163,4 +163,17 @@ public class ChatServiceImpl implements ChatService {
         total
     );
   }
+
+  @Override
+  public ChatDtos.MessageListResponse getAdminMessages(final UUID sessionId, final int limit, final int offset) {
+    // Admin access — no ownership check; verify session exists for a clean 404
+    chatSessionMapper.findById(sessionId)
+        .orElseThrow(() -> new ChatSessionNotFoundException(sessionId));
+    final var messages = chatMessageMapper.findBySessionId(sessionId, limit, offset);
+    final var total = chatMessageMapper.countBySessionId(sessionId);
+    return new ChatDtos.MessageListResponse(
+        messages.stream().map(ChatDtoMapper::toMessageResponse).toList(),
+        total
+    );
+  }
 }
