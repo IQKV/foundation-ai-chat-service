@@ -1,1 +1,280 @@
 ## 📜 Deployment Guide
+
+### Overview
+
+The Foundation AI Chat Service is deployed using Helm charts and automated CI/CD pipelines. The service provides LLM-backed conversational capabilities via Spring AI 2.0 and Ollama, with JWT RS256 resource-server security validated against the IAM service JWKS endpoint.
+
+### Prerequisites
+
+- Kubernetes 1.19+
+- Helm 3.2.0+
+- External infrastructure services (PostgreSQL, RabbitMQ)
+- Ollama instance accessible within the cluster (or externally via URL)
+
+### Environments
+
+| Environment | Namespace      | Purpose                   |
+| ----------- | -------------- | ------------------------- |
+| Test        | `iqkv-sit-env` | Feature branch testing    |
+| Staging     | `iqkv-uat-env` | Pre-production validation |
+| Production  | `iqkv-prd-env` | Live production           |
+
+### Automated Deployment (CI/CD)
+
+#### Drone Pipeline Overview
+
+<details>
+<summary>📋 Pipeline Stages</summary>
+
+The service uses a Drone CI/CD pipeline with 10 stages:
+
+1. **VerifyCode** — Code quality, tests, static analysis
+2. **PublishArtifacts** — Maven artifacts to Nexus
+3. **PublishDockerImage** — Container images to registry
+4. **DeployWorkInProgress** — WIP branch auto-deployment to SIT
+5. **RollbackWorkInProgress** — WIP rollback
+6. **PromoteFeatureDeployment** — Feature branch promotion to SIT
+7. **RollbackFeatureDeployment** — Feature rollback
+8. **PromoteDeployment** — Release promotion to UAT/PRD
+9. **RollbackDeployment** — Release rollback
+10. **ReleasePackage** — Automated version management
+
+</details>
+
+<details>
+<summary>🔐 Required Drone Secrets</summary>
+
+| Secret Name                       | Purpose                           | Used In                                    |
+| --------------------------------- | --------------------------------- | ------------------------------------------ |
+| `NEXUS_DEPLOYER_USERNAME`         | Nexus repository authentication   | Artifact publishing, dependency resolution |
+| `NEXUS_DEPLOYER_PASSWORD`         | Nexus repository authentication   | Artifact publishing, dependency resolution |
+| `SONAR_HOST`                      | SonarQube server URL              | Static code analysis                       |
+| `SONAR_TOKEN`                     | SonarQube authentication token    | Static code analysis                       |
+| `SLACK_WEBHOOK`                   | Slack notifications webhook URL   | Build status notifications                 |
+| `GITHUB_API_ACCESS_TOKEN`         | GitHub API access for releases    | Release creation, changelog generation     |
+| `SVC_CONTAINER_REGISTRY_USERNAME` | Container registry authentication | Docker image publishing                    |
+| `SVC_CONTAINER_REGISTRY_PASSWORD` | Container registry authentication | Docker image publishing                    |
+| `HELM_CHARTS_REPOSITORY`          | Helm charts repository URL        | Kubernetes deployments                     |
+| `INFRA_POSTGRESQL_PASSWORD`       | PostgreSQL database password      | Application configuration                  |
+| `INFRA_RABBITMQ_PASSWORD`         | RabbitMQ message broker password  | Application configuration                  |
+
+> No `SMTP_*` secrets required — the AI Chat Service does not send email.
+
+</details>
+
+#### Branch Deployment Strategy
+
+| Branch Type | Auto Deploy | Manual Promote | Target Environment |
+| ----------- | ----------- | -------------- | ------------------ |
+| `wip`       | ✅ SIT      | -              | SIT                |
+| `feature/*` | -           | ✅ SIT         | SIT                |
+| Tags        | -           | ✅ UAT / PRD   | UAT / Production   |
+
+#### Deployment Commands
+
+<details>
+<summary>Helm Commands</summary>
+
+```bash
+# WIP / Feature branches (SIT)
+helm upgrade --install --atomic --wait --timeout 5m foundation-ai-chat-service ./ \
+  --values ./values.yaml \
+  --values ./values-sit.yaml \
+  --set image.tag=${DRONE_BRANCH} \
+  --set infraServices.postgresql.password=${INFRA_POSTGRESQL_PASSWORD} \
+  --set infraServices.rabbitmq.password=${INFRA_RABBITMQ_PASSWORD} \
+  --namespace iqkv-sit-env \
+  --create-namespace
+
+# Production (tagged releases)
+helm upgrade --install --atomic --wait --timeout 5m foundation-ai-chat-service ./ \
+  --values ./values.yaml \
+  --values ./values-prd.yaml \
+  --set image.tag=${DRONE_TAG} \
+  --set infraServices.postgresql.password=${INFRA_POSTGRESQL_PASSWORD} \
+  --set infraServices.rabbitmq.password=${INFRA_RABBITMQ_PASSWORD} \
+  --namespace iqkv-prd-env \
+  --create-namespace
+```
+
+</details>
+
+### Manual Deployment
+
+#### Quick Start
+
+```bash
+# Clone Helm charts
+git clone <HELM_CHARTS_REPOSITORY> charts
+cd charts/IQKV/foundation-ai-chat-service
+
+# Deploy to SIT
+helm upgrade --install foundation-ai-chat-service ./ \
+  --values values-sit.yaml \
+  --set infraServices.postgresql.password="your-db-password" \
+  --set infraServices.rabbitmq.password="your-rabbitmq-password" \
+  --namespace iqkv-sit-env \
+  --create-namespace
+```
+
+#### Secret Configuration Examples
+
+```bash
+drone secret add --repository IQKV/foundation-ai-chat-service --name INFRA_POSTGRESQL_PASSWORD --data "your-postgresql-password"
+drone secret add --repository IQKV/foundation-ai-chat-service --name INFRA_RABBITMQ_PASSWORD --data "your-rabbitmq-password"
+```
+
+#### External Services
+
+The service connects to these external infrastructure components:
+
+- **PostgreSQL**: Chat session and message persistence (system/public schema — no tenant schemas)
+- **RabbitMQ**: Messaging and tenant provisioning consumer
+- **Ollama**: LLM inference endpoint (`http://foundation-ollama:11434` by default)
+- **IAM Service**: JWKS endpoint for JWT validation (`http://foundation-iam-service:8080/.well-known/jwks.json`)
+- **Billing Service**: Plan quota enforcement (`http://foundation-billing-service:8080`)
+
+> **Ollama note:** The default values point to `http://foundation-ollama:11434` (in-cluster). For external Ollama instances (e.g. a VDS with GPU), override `ai.ollama.baseUrl` via `--set` or the Helm values file.
+
+#### Ollama Model Setup
+
+After first deployment, pull the required model into Ollama:
+
+```bash
+kubectl exec -it deployment/foundation-ollama -n iqkv-sit-env -- ollama pull llama3.1:8b
+```
+
+Or, if using an external Ollama instance:
+
+```bash
+docker exec <ollama-container> ollama pull llama3.1:8b
+```
+
+The default model is `llama3.1:8b`. Override via `ai.ollama.model` in values or the `SPRING_AI_OLLAMA_CHAT_OPTIONS_MODEL` env var.
+
+#### Service Configuration
+
+| Setting          | SIT      | UAT      | Production    |
+| ---------------- | -------- | -------- | ------------- |
+| Replicas         | 1        | 1        | 2             |
+| CPU Request      | 300m     | 500m     | 500m          |
+| CPU Limit        | 750m     | 1000m    | 1000m         |
+| Memory Request   | 384Mi    | 512Mi    | 512Mi         |
+| Memory Limit     | 768Mi    | 1Gi      | 1Gi           |
+| Autoscaling      | Disabled | Disabled | 2–10 replicas |
+| Ingress          | Disabled | Disabled | Configurable  |
+| Monitoring       | Disabled | Enabled  | Enabled       |
+| Network Policy   | Disabled | Disabled | Enabled       |
+
+#### Prompt Engineering Configuration
+
+The system prompt and LLM parameters are configurable per environment without rebuilding the image:
+
+| Helm Value                     | Env Variable            | Default  | Description                              |
+| ------------------------------ | ----------------------- | -------- | ---------------------------------------- |
+| `ai.prompt.systemPrompt`       | `AI_SYSTEM_PROMPT`      | (built-in) | System message injected on every call  |
+| `ai.prompt.maxInputChars`      | `AI_MAX_INPUT_CHARS`    | 4000     | Input character limit                    |
+| `ai.prompt.maxOutputTokens`    | `AI_MAX_OUTPUT_TOKENS`  | 1024     | Max tokens per LLM response              |
+| `ai.prompt.temperature`        | `AI_TEMPERATURE`        | 0.7      | Response creativity (0.0–1.0)            |
+
+Override for a specific environment:
+
+```bash
+helm upgrade ... \
+  --set ai.prompt.systemPrompt="You are a helpful assistant for Acme Corp." \
+  --set ai.prompt.temperature=0.3
+```
+
+#### Platform Rollout Mode
+
+`platform.rolloutMode` must be identical across all core services (`MULTI_TENANT` or `SINGLE_TENANT`).
+
+### Monitoring & Health Checks
+
+#### Health Endpoints
+
+- **Liveness**: `/actuator/health/liveness` (port 8081)
+- **Readiness**: `/actuator/health/readiness` (port 8081)
+- **Metrics**: `/actuator/prometheus` (port 8081)
+
+#### Monitoring Stack
+
+UAT and production deployments include:
+
+- Prometheus ServiceMonitor
+- Alerting rules: service down, high memory (>85%), high CPU (>80%), high error rate (>5% 5xx), slow LLM responses (p95 >10s — extended threshold due to inference latency)
+- Grafana dashboards
+
+### Troubleshooting
+
+#### Common Issues
+
+1. **LLM model not found (502 Bad Gateway)**
+
+    ```bash
+    # Check Ollama has the required model
+    kubectl exec -it deployment/foundation-ollama -n iqkv-sit-env -- ollama list
+    # If missing:
+    kubectl exec -it deployment/foundation-ollama -n iqkv-sit-env -- ollama pull llama3.1:8b
+    ```
+
+2. **Request timeout (gateway 504)**
+
+    LLM inference for large prompts can exceed 60 seconds. The gateway has a 180-second timeout on the `aichat-api` route. If timeouts persist, consider:
+    - Using a smaller model (e.g. `llama3.2`)
+    - Reducing `AI_MAX_OUTPUT_TOKENS`
+    - Scaling the Ollama instance to hardware with GPU
+
+3. **Database connection failures**
+
+    ```bash
+    kubectl logs deployment/foundation-ai-chat-service -n iqkv-sit-env
+    ```
+
+4. **JWT validation failures**
+
+    Ensure `config.jwt.jwksUri` points to the correct IAM service JWKS endpoint:
+
+    ```bash
+    kubectl describe configmap foundation-ai-chat-service-config -n iqkv-sit-env
+    ```
+
+5. **Check configuration**
+
+    ```bash
+    kubectl describe configmap foundation-ai-chat-service-config -n iqkv-sit-env
+    kubectl describe secret foundation-ai-chat-service-secrets -n iqkv-sit-env
+    ```
+
+6. **Test health endpoints**
+
+    ```bash
+    kubectl port-forward deployment/foundation-ai-chat-service 8081:8081 -n iqkv-sit-env
+    curl http://localhost:8081/actuator/health
+    ```
+
+#### Missing Secrets Diagnosis
+
+```bash
+kubectl get secrets -n iqkv-sit-env
+kubectl get secret foundation-ai-chat-service-secrets -n iqkv-sit-env -o yaml
+drone secret ls --repository IQKV/foundation-ai-chat-service
+```
+
+#### Rollback
+
+```bash
+helm rollback foundation-ai-chat-service -n iqkv-prd-env
+# Or uninstall completely
+helm uninstall foundation-ai-chat-service -n iqkv-prd-env
+```
+
+### Security
+
+- JWT RS256 validated via IAM JWKS endpoint — no local PEM key required in deployed environments
+- All sensitive values injected via `--set` flags from Drone secrets (never stored in chart)
+- TLS configurable via cert-manager in production ingress
+- Network policies restrict pod communication in production — includes explicit Ollama egress rule (port 11434)
+- Non-root container execution (UID 1001)
+- Read-only root filesystem in production
+- System prompt configurable via env var — override per environment without a rebuild
