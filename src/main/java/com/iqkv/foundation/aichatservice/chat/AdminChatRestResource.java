@@ -46,7 +46,7 @@ public class AdminChatRestResource {
   @GetMapping("/sessions")
   @Operation(summary = "List all chat sessions (platform admin)")
   public ResponseEntity<ChatDtos.SessionListResponse> getAllSessions(
-      @RequestParam(defaultValue = "20") final int limit,
+      @RequestParam(defaultValue = "100") final int limit,
       @RequestParam(defaultValue = "0") final int offset) {
     return ResponseEntity.ok(chatService.getAllSessions(limit, offset));
   }
@@ -57,7 +57,7 @@ public class AdminChatRestResource {
                            + "Returns 404 if the session does not exist.")
   public ResponseEntity<ChatDtos.MessageListResponse> getMessages(
       @Parameter(description = "Session UUID") @PathVariable final UUID sessionId,
-      @RequestParam(defaultValue = "50") final int limit,
+      @RequestParam(defaultValue = "200") final int limit,
       @RequestParam(defaultValue = "0") final int offset) {
     return ResponseEntity.ok(chatService.getAdminMessages(sessionId, limit, offset));
   }
