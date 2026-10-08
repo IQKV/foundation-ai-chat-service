@@ -145,6 +145,7 @@ public class ChatServiceImpl implements ChatService {
     final String displayName = buildDisplayName(firstName, lastName);
     if (!displayName.isEmpty()) {
       sb.append("The user you are talking to is ").append(displayName).append(".\n");
+      sb.append("Address the user by their name (").append(displayName).append(") in your replies when appropriate.\n");
     }
 
     // Current plan line
@@ -154,6 +155,7 @@ public class ChatServiceImpl implements ChatService {
       sb.append("They do not have an active subscription.\n");
     }
 
+    sb.append("You can call getCurrentUserProfile() to retrieve information about the current user.\n");
     sb.append("You can call getAvailablePlans() to look up available plans and their features.\n");
     sb.append("\n");
     sb.append(aiProps.systemPrompt());

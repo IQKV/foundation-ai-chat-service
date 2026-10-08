@@ -18,9 +18,12 @@ package com.iqkv.foundation.aichatservice.infrastructure.context;
 
 import java.util.List;
 
+import com.iqkv.foundation.aichatservice.infrastructure.security.JwtClaimNames;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -54,6 +57,14 @@ public class PlatformContextService {
 
   // ─── Response records ─────────────────────────────────────────────────────
 
+  /**
+   * User profile information.
+   *
+   * @param firstName user first name
+   * @param lastName  user last name
+   * @param fullName  user full display name
+   * @param planCode  active billing plan code or null
+   */
   public record UserProfile(String firstName, String lastName, String fullName, String planCode) {
   }
 
@@ -146,5 +157,30 @@ public class PlatformContextService {
       log.warn("Failed to fetch available plans from Billing service: {}", e.getMessage());
       return new PlanListResponse(List.of());
     }
+  }
+
+  /**
+   * Returns basic profile details of the currently authenticated user from JWT claims.
+   * No network call required.
+   *
+   * @return current user profile or empty profile if unauthenticated
+   */
+  public UserProfile getCurrentUserProfile() {
+    final var auth = SecurityContextHolder.getContext().getAuthentication();
+    if (auth != null && auth.getPrincipal() instanceof final Jwt jwt) {
+      final var firstName = jwt.getClaimAsString(JwtClaimNames.FIRST_NAME);
+      final var lastName = jwt.getClaimAsString(JwtClaimNames.LAST_NAME);
+      final var planCode = jwt.getClaimAsString(JwtClaimNames.PLAN_CODE);
+      final var fullName = buildDisplayName(firstName, lastName);
+      return new UserProfile(firstName, lastName, fullName, planCode);
+    }
+    return new UserProfile(null, null, null, null);
+  }
+
+  private String buildDisplayName(final String firstName, final String lastName) {
+    final var first = firstName != null ? firstName.strip() : "";
+    final var last = lastName != null ? lastName.strip() : "";
+    final var full = (first + " " + last).strip();
+    return full.isEmpty() ? null : full;
   }
 }

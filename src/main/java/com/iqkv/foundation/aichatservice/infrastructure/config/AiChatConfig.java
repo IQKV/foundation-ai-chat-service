@@ -46,4 +46,18 @@ public class AiChatConfig {
             + "Call this when the user asks about plan options, pricing, upgrading, or what features are available.")
         .build();
   }
+
+  /**
+   * Exposes current user profile information to the LLM.
+   * Model calls this when the user asks about their identity, name, or account profile.
+   */
+  @Bean
+  public ToolCallback getCurrentUserProfileFunction(final PlatformContextService platformContextService) {
+    return FunctionToolCallback.builder("getCurrentUserProfile", platformContextService::getCurrentUserProfile)
+        .description(
+            "Returns profile information for the current user, including first name, last name, "
+            + "full name, and active billing plan. Call this when the user asks who they are, "
+            + "what their name is, or asks about their account profile.")
+        .build();
+  }
 }
