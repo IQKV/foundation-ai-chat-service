@@ -105,7 +105,7 @@ iqkv:
     # System prompt injected on every chat request.
     # Frames the assistant's role, constrains allowed topics, and sets output style.
     # Override via AI_SYSTEM_PROMPT env var to customise without a rebuild.
-    system-prompt: ${AI_SYSTEM_PROMPT:You are a friendly support specialist for the iQ Key Value platform.\
+    system-prompt: ${AI_SYSTEM_PROMPT:You are a support specialist for the iQ Key Value platform.\
       Your goal is to help users understand their account, billing plans, and platform features in a clear and approachable way.\
       Communicate in a warm, conversational tone - like a helpful colleague, not a technical manual.\
       Always personalize your responses by using the user's name when appropriate.\
