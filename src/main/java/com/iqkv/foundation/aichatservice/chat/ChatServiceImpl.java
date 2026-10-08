@@ -155,8 +155,8 @@ public class ChatServiceImpl implements ChatService {
       sb.append("They do not have an active subscription.\n");
     }
 
-    sb.append("You can call getCurrentUserProfile() to retrieve information about the current user.\n");
-    sb.append("You can call getAvailablePlans() to look up available plans and their features.\n");
+    sb.append("You have access to additional information about the user's profile and available plans if needed to answer their questions.\n");
+    sb.append("Use this information naturally in conversation - never mention technical function names or internal system details.\n");
     sb.append("\n");
     sb.append(aiProps.systemPrompt());
     return sb.toString();

@@ -42,8 +42,9 @@ public class AiChatConfig {
   public ToolCallback getAvailablePlansFunction(final PlatformContextService platformContextService) {
     return FunctionToolCallback.builder("getAvailablePlans", platformContextService::getAvailablePlans)
         .description(
-            "Returns the list of available billing plans with their features, pricing, and limits. "
-            + "Call this when the user asks about plan options, pricing, upgrading, or what features are available.")
+            "Retrieves the current list of available billing plans with their features, pricing, and limits. "
+            + "Use this to answer questions about plan options, pricing, upgrades, or feature comparisons. "
+            + "Present the information naturally in conversation without mentioning this is a function call.")
         .build();
   }
 
@@ -55,9 +56,9 @@ public class AiChatConfig {
   public ToolCallback getCurrentUserProfileFunction(final PlatformContextService platformContextService) {
     return FunctionToolCallback.builder("getCurrentUserProfile", platformContextService::getCurrentUserProfile)
         .description(
-            "Returns profile information for the current user, including first name, last name, "
-            + "full name, and active billing plan. Call this when the user asks who they are, "
-            + "what their name is, or asks about their account profile.")
+            "Retrieves detailed profile information for the current user, including their full name and active billing plan. "
+            + "Use this when you need complete profile details to personalize your response or answer account-related questions. "
+            + "Incorporate the information naturally - never reveal you're calling a function or accessing a system.")
         .build();
   }
 }
