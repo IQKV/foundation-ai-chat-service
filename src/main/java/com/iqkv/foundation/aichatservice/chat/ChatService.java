@@ -22,7 +22,8 @@ import com.iqkv.foundation.aichatservice.chat.dto.ChatDtos;
 
 public interface ChatService {
 
-  ChatDtos.ChatResponse chat(UUID actorId, ChatDtos.SendMessageRequest request);
+  ChatDtos.ChatResponse chat(UUID actorId, String firstName, String lastName,
+                             String planCode, ChatDtos.SendMessageRequest request);
 
   ChatDtos.SessionListResponse getSessions(UUID userId, int limit, int offset);
 

@@ -17,6 +17,7 @@
 package com.iqkv.foundation.aichatservice.chat;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import com.iqkv.foundation.aichatservice.chat.dto.ChatDtoMapper;
@@ -28,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.ollama.api.OllamaChatOptions;
 import org.springframework.ai.retry.NonTransientAiException;
+import org.springframework.ai.tool.ToolCallback;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -40,19 +42,24 @@ public class ChatServiceImpl implements ChatService {
   private final ChatMessageMapper chatMessageMapper;
   private final ChatClient chatClient;
   private final AiChatProperties aiProps;
+  private final List<ToolCallback> platformFunctions;
 
   public ChatServiceImpl(final ChatSessionMapper chatSessionMapper,
                          final ChatMessageMapper chatMessageMapper,
                          final ChatClient chatClient,
-                         final AiChatProperties aiProps) {
+                         final AiChatProperties aiProps,
+                         final List<ToolCallback> platformFunctions) {
     this.chatSessionMapper = chatSessionMapper;
     this.chatMessageMapper = chatMessageMapper;
     this.chatClient = chatClient;
     this.aiProps = aiProps;
+    this.platformFunctions = platformFunctions != null ? platformFunctions : List.of();
   }
 
   @Override
-  public ChatDtos.ChatResponse chat(final UUID actorId, final ChatDtos.SendMessageRequest request) {
+  public ChatDtos.ChatResponse chat(final UUID actorId, final String firstName,
+                                    final String lastName, final String planCode,
+                                    final ChatDtos.SendMessageRequest request) {
     final ChatSession session;
 
     if (request.sessionId() == null) {
@@ -82,14 +89,23 @@ public class ChatServiceImpl implements ChatService {
     userMessage.setCreatedAt(Instant.now());
     chatMessageMapper.insert(userMessage);
 
+    // Build enriched system prompt with user context from JWT
+    final String systemPrompt = buildSystemPrompt(firstName, lastName, planCode);
+
     // Build per-request options: model, temperature, output token limit
-    final var reply = chatClient.prompt()
-        .system(aiProps.systemPrompt())
+    var promptSpec = chatClient.prompt()
+        .system(systemPrompt)
         .user(userContent)
         .options(OllamaChatOptions.builder()
             .model(session.getModel())
             .temperature(aiProps.temperature())
-            .numPredict(aiProps.maxOutputTokens()))
+            .numPredict(aiProps.maxOutputTokens()));
+
+    if (!platformFunctions.isEmpty()) {
+      promptSpec = promptSpec.tools(platformFunctions);
+    }
+
+    final var reply = promptSpec
         .call()
         .content();
 
@@ -114,6 +130,47 @@ public class ChatServiceImpl implements ChatService {
     chatSessionMapper.update(session);
 
     return new ChatDtos.ChatResponse(session.getId(), session.getTitle(), reply, session.getModel(), Instant.now());
+  }
+
+  /**
+   * Prepends user-specific context to the configured system prompt.
+   * Gives the model the user's name and current plan so it can personalise
+   * responses without the user having to repeat themselves.
+   */
+  private String buildSystemPrompt(final String firstName, final String lastName,
+                                   final String planCode) {
+    final var sb = new StringBuilder();
+
+    // User identity line
+    final String displayName = buildDisplayName(firstName, lastName);
+    if (!displayName.isEmpty()) {
+      sb.append("The user you are talking to is ").append(displayName).append(".\n");
+    }
+
+    // Current plan line
+    if (planCode != null && !planCode.isBlank()) {
+      sb.append("Their current billing plan is: ").append(planCode).append(".\n");
+    } else {
+      sb.append("They do not have an active subscription.\n");
+    }
+
+    sb.append("You can call getAvailablePlans() to look up available plans and their features.\n");
+    sb.append("\n");
+    sb.append(aiProps.systemPrompt());
+    return sb.toString();
+  }
+
+  private String buildDisplayName(final String firstName, final String lastName) {
+    if (firstName != null && lastName != null) {
+      return firstName.strip() + " " + lastName.strip();
+    }
+    if (firstName != null) {
+      return firstName.strip();
+    }
+    if (lastName != null) {
+      return lastName.strip();
+    }
+    return "";
   }
 
   @Override

@@ -16,7 +16,10 @@
 
 package com.iqkv.foundation.aichatservice.infrastructure.config;
 
+import com.iqkv.foundation.aichatservice.infrastructure.context.PlatformContextService;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.tool.ToolCallback;
+import org.springframework.ai.tool.function.FunctionToolCallback;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,5 +31,19 @@ public class AiChatConfig {
   @Bean
   public ChatClient chatClient(final ChatClient.Builder builder) {
     return builder.build();
+  }
+
+  /**
+   * Exposes available billing plans to the LLM.
+   * Model calls this when the user asks about plans, pricing, or upgrades.
+   * No auth needed — the Billing internal plans endpoint is public on the internal network.
+   */
+  @Bean
+  public ToolCallback getAvailablePlansFunction(final PlatformContextService platformContextService) {
+    return FunctionToolCallback.builder("getAvailablePlans", platformContextService::getAvailablePlans)
+        .description(
+            "Returns the list of available billing plans with their features, pricing, and limits. "
+            + "Call this when the user asks about plan options, pricing, upgrading, or what features are available.")
+        .build();
   }
 }

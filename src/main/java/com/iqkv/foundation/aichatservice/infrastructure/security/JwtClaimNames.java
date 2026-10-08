@@ -59,6 +59,22 @@ public final class JwtClaimNames {
   public static final String USER_ID = "user_id";
 
   /**
+   * User first name.
+   */
+  public static final String FIRST_NAME = "first_name";
+
+  /**
+   * User last name.
+   */
+  public static final String LAST_NAME = "last_name";
+
+  /**
+   * Active billing plan code, e.g. {@code "pro"} or {@code "starter"}.
+   * Absent when the user/tenant has no active subscription.
+   */
+  public static final String PLAN_CODE = "plan_code";
+
+  /**
    * Granted authority strings, e.g. {@code ["ROLE_USER", "TENANT_OWNER"]}.
    * Mapped to Spring Security {@code GrantedAuthority} instances by the
    * {@code JwtAuthenticationConverter}.

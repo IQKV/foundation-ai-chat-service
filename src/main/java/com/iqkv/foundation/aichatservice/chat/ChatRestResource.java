@@ -54,7 +54,10 @@ public class ChatRestResource {
       @Valid @RequestBody final ChatDtos.SendMessageRequest request,
       @AuthenticationPrincipal final Jwt jwt) {
     final var userId = UUID.fromString((String) jwt.getClaim(JwtClaimNames.USER_ID));
-    return ResponseEntity.ok(chatService.chat(userId, request));
+    final var firstName = jwt.getClaimAsString(JwtClaimNames.FIRST_NAME);
+    final var lastName = jwt.getClaimAsString(JwtClaimNames.LAST_NAME);
+    final var planCode = jwt.getClaimAsString(JwtClaimNames.PLAN_CODE);
+    return ResponseEntity.ok(chatService.chat(userId, firstName, lastName, planCode, request));
   }
 
   @GetMapping("/sessions")
