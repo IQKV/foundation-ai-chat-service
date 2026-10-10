@@ -122,6 +122,9 @@ iqkv:
     # Temperature controls response creativity.
     # 0.0-0.3 = focused/factual, 0.7-1.0 = creative. Default 0.7 suits general Q&A.
     temperature: ${AI_TEMPERATURE:0.7}
+    # Default Ollama model tag used when the client request omits the model field.
+    # Override via AI_DEFAULT_MODEL env var without a rebuild.
+    default-model: ${AI_DEFAULT_MODEL:llama3.1:8b}
   auth:
     jwt:
       # --- Deployed (K8s) — set JWT_JWKS_URI in Helm values / K8s configmap ---

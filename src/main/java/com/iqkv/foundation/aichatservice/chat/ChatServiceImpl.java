@@ -36,7 +36,6 @@ import org.springframework.stereotype.Service;
 public class ChatServiceImpl implements ChatService {
 
   private static final Logger log = LoggerFactory.getLogger(ChatServiceImpl.class);
-  private static final String DEFAULT_MODEL = "llama3.1:8b";
 
   private final ChatSessionMapper chatSessionMapper;
   private final ChatMessageMapper chatMessageMapper;
@@ -66,7 +65,7 @@ public class ChatServiceImpl implements ChatService {
       session = new ChatSession();
       session.setId(UUID.randomUUID());
       session.setUserId(actorId);
-      session.setModel(request.model() != null ? request.model() : DEFAULT_MODEL);
+      session.setModel(request.model() != null ? request.model() : aiProps.defaultModel());
       session.setTitle(null);
       session.setCreatedAt(Instant.now());
       session.setUpdatedAt(Instant.now());

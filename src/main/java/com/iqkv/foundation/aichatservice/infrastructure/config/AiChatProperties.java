@@ -32,6 +32,8 @@ import org.springframework.validation.annotation.Validated;
  *       the completion length.</li>
  *   <li>{@code temperature} — controls response creativity (0.0 = deterministic,
  *       1.0 = creative). Use lower values for factual / support use cases.</li>
+ *   <li>{@code default-model} — Ollama model tag used when the client does not
+ *       specify a model in the request. Override via {@code AI_DEFAULT_MODEL} env var.</li>
  * </ul>
  */
 @Validated
@@ -40,5 +42,6 @@ public record AiChatProperties(
     String systemPrompt,
     int maxInputChars,
     int maxOutputTokens,
-    double temperature) {
+    double temperature,
+    String defaultModel) {
 }
