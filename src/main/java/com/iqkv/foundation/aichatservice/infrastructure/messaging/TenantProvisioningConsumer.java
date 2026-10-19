@@ -41,9 +41,6 @@ import org.springframework.stereotype.Component;
  * message converter defaults to {@code TypePrecedence.INFERRED} and falls back to the listener's
  * declared parameter type. Do not switch the type precedence to {@code TYPE_ID}, or
  * deserialization will fail here.
- *
- * <p>When scaffolding a new service from this template, replace every occurrence of
- * {@code aichat} with the actual service name.
  */
 @Component
 @ConditionalOnProperty(name = "iqkv.messaging.rabbitmq.enabled", havingValue = "true")
