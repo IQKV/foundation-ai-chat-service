@@ -52,6 +52,7 @@ public class RabbitMQConfig {
   // Routing keys
   // -------------------------------------------------------------------------
   public static final String ROUTING_TENANT_CREATED = "tenant.created";
+  public static final String ROUTING_TENANT_UPDATED = "tenant.updated";
 
   private static final long TTL_24H_MS = 86_400_000L;
 
@@ -73,6 +74,10 @@ public class RabbitMQConfig {
   public Queue tenantProvisioningQueue() {
     return QueueBuilder.durable(TENANT_PROVISIONING_QUEUE)
         .withArgument("x-dead-letter-exchange", DLX_EXCHANGE)
+        // Without an explicit routing key the dead-lettered message keeps its original
+        // routing key (tenant.created / tenant.updated) and would never match this
+        // service's DLQ binding below, so the message would be silently dropped.
+        .withArgument("x-dead-letter-routing-key", SERVICE_DLQ)
         .withArgument("x-message-ttl", TTL_24H_MS)
         .build();
   }
@@ -87,6 +92,13 @@ public class RabbitMQConfig {
                                            final TopicExchange eventsExchange) {
     return BindingBuilder.bind(tenantProvisioningQueue).to(eventsExchange)
         .with(ROUTING_TENANT_CREATED);
+  }
+
+  @Bean
+  public Binding tenantUpdateBinding(final Queue tenantProvisioningQueue,
+                                     final TopicExchange eventsExchange) {
+    return BindingBuilder.bind(tenantProvisioningQueue).to(eventsExchange)
+        .with(ROUTING_TENANT_UPDATED);
   }
 
   @Bean
