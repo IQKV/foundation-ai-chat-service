@@ -84,7 +84,7 @@ ollama pull llama3.2
 cp .env.example .env.local
 # Defaults point to Ollama on localhost:11434 — no edits needed for first-run
 
-# Start infrastructure dependencies (PostgreSQL, RabbitMQ, MailHog)
+# Start infrastructure dependencies (PostgreSQL, RabbitMQ)
 docker compose up -d
 
 # Run the service
@@ -107,9 +107,6 @@ docker compose up -d
 | `RABBITMQ_PORT`                       | `5672`                   | RabbitMQ AMQP port                            |
 | `RABBITMQ_USERNAME`                   | `svc_aichat_rmq`         | RabbitMQ user                                 |
 | `RABBITMQ_PASSWORD`                   | `svc_aichat_rmq`         | RabbitMQ password                             |
-| `MAIL_HOST`                           | `localhost`              | SMTP host                                     |
-| `MAIL_PORT`                           | `1025`                   | SMTP port (MailHog default)                   |
-| `MAIL_FROM`                           | `noreply@iqkv.dev`       | Sender address                                |
 | `SPRING_PROFILES_ACTIVE`              | `local`                  | Active Spring profile                         |
 | `SPRING_AI_OLLAMA_BASE_URL`           | `http://localhost:11434` | Ollama server URL                             |
 | `SPRING_AI_OLLAMA_CHAT_OPTIONS_MODEL` | `llama3.2`               | Model to use (must be pulled in Ollama first) |

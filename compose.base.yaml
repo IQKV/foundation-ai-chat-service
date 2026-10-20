@@ -64,17 +64,6 @@ services:
       start_period: 60s
     restart: unless-stopped
 
-  # MailHog for local email testing
-  mailhog:
-    image: mailhog/mailhog:v1.0.1
-    container_name: foundation-aichat-mailhog-dev
-    ports:
-      - "1025:1025" # SMTP
-      - "8025:8025" # Web UI
-    networks:
-      - aichat-service-network
-    restart: unless-stopped
-
   # DbGate - Database Administration Tool
   dbgate:
     image: dbgate/dbgate:5.3.3
@@ -127,14 +116,6 @@ services:
       RABBITMQ_PORT: 5672
       RABBITMQ_USERNAME: svc_aichat_rmq
       RABBITMQ_PASSWORD: svc_aichat_rmq
-
-      # Mail Configuration (MailHog)
-      MAIL_HOST: mailhog
-      MAIL_PORT: 1025
-      MAIL_USERNAME: ""
-      MAIL_PASSWORD: ""
-      MAIL_FROM: noreply@iqkv.dev
-      MAIL_REPLY_TO: ""
 
       # Observability
       OTEL_SERVICE_NAME: foundation-ai-chat-service

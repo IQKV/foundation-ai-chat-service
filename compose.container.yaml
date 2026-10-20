@@ -11,12 +11,6 @@ services:
       file: compose.base.yaml
       service: rabbitmq-aichat
 
-  # MailHog for local email testing
-  mailhog:
-    extends:
-      file: compose.base.yaml
-      service: mailhog
-
   # DbGate - Database Administration Tool
   dbgate:
     extends:

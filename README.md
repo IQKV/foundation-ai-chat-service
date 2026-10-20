@@ -9,7 +9,7 @@ This template provides:
 - **Maven single-module layout** — standard `src/main/java` structure with MyBatis, PostgreSQL, Liquibase, and RabbitMQ wired up
 - **Spring AI integration** — chat endpoint wired to a local Ollama instance by default; swap to any OpenAI-compatible provider via `spring.ai.*` config
 - **Multi-profile Spring config** — `local`, `sit`, `uat`, `prd` profiles with correct defaults per environment
-- **Docker Compose** — `compose.base.yaml` with PostgreSQL, RabbitMQ, MailHog, SonarQube, Prometheus, and Grafana; `compose.container.yaml` for full runtime stack including the service container
+- **Docker Compose** — `compose.base.yaml` with PostgreSQL, RabbitMQ, SonarQube, Prometheus, and Grafana; `compose.container.yaml` for full runtime stack including the service container
 - **Dockerfile** — multi-stage build with layered JAR extraction, non-root `appuser`, and JVM tuning
 - **Database Initialization** — `docker/postgres/init-aichat.sql` for automated schema and extension setup
 - **Security** — Spring Security + OAuth2 Resource Server (RS256 JWT) pre-configured
@@ -69,7 +69,7 @@ ollama pull llama3.2
 cp .env.example .env.local
 # Defaults point to Ollama on localhost:11434 — no API key needed for local dev
 
-# Start dependencies (PostgreSQL, RabbitMQ, MailHog, etc.)
+# Start dependencies (PostgreSQL, RabbitMQ, etc.)
 docker compose up -d
 
 # Run the service
@@ -77,7 +77,6 @@ docker compose up -d
 # → API:      http://localhost:8080
 # → Actuator: http://localhost:8081/actuator/health
 # → Swagger:  http://localhost:8080/swagger-ui.html
-# → MailHog:  http://localhost:8025
 ```
 
 ## Environment Variables
@@ -93,9 +92,6 @@ docker compose up -d
 | `RABBITMQ_PORT`                       | `5672`                   | RabbitMQ AMQP port                    |
 | `RABBITMQ_USERNAME`                   | `svc_aichat_rmq`         | RabbitMQ user                         |
 | `RABBITMQ_PASSWORD`                   | `svc_aichat_rmq`         | RabbitMQ password                     |
-| `MAIL_HOST`                           | `localhost`              | SMTP host (MailHog)                   |
-| `MAIL_PORT`                           | `1025`                   | SMTP port                             |
-| `MAIL_FROM`                           | `noreply@iqkv.dev`       | Default sender email                  |
 | `SPRING_AI_OLLAMA_BASE_URL`           | `http://localhost:11434` | Ollama server URL                     |
 | `SPRING_AI_OLLAMA_CHAT_OPTIONS_MODEL` | `llama3.2`               | Model name (must be pulled in Ollama) |
 | `ROLLOUT_MODE`                        | `MULTI_TENANT`           | Platform rollout mode                 |
@@ -139,7 +135,6 @@ docker compose -f compose.container.yaml up -d
 | `GET /actuator/metrics`    | Application metrics         |
 | `GET /actuator/prometheus` | Prometheus scrape endpoint  |
 | `GET /swagger-ui.html`     | API documentation           |
-| `GET /` (on port 8025)     | MailHog Web UI              |
 
 ## Project Structure
 
