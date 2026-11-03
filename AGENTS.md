@@ -6,70 +6,71 @@ This document provides comprehensive guidelines for repository management, devel
 
 ## 🏛️ Repository Structure & Organization
 
-### Tactical DDD Project Layout
+### Feature-Sliced Project Layout
+
+This service is organized by **vertical feature slices**, not by DDD layers. Each slice is one
+top-level package that owns everything it needs — REST resources, service contract and
+implementation, DTOs, mappers and slice-specific exceptions — alongside the cross-cutting
+`infrastructure` and `shared` packages. There are deliberately no
+`domain`/`application`/`adapter` packages.
 
 ```
-project-root/
-├── .github/                          # GitHub workflows and automation
-│   └── workflows/                    # CI/CD pipeline definitions
+foundation-ai-chat-service/
+├── .github/workflows/                # GitHub Actions pipelines
+├── docker/                           # Local stack config
 ├── src/
 │   ├── main/
-│   │   ├── java/                     # Java source code
-│   │   │   └── com/example/project/
-│   │   │       ├── shared/           # Shared kernel (cross-cutting concerns)
-│   │   │       │   ├── domain/       # Shared domain primitives
-│   │   │       │   ├── exception/    # Common exceptions
-│   │   │       │   └── util/         # Utility classes
-│   │   │       ├── infrastructure/   # Infrastructure layer
-│   │   │       │   ├── config/       # Spring configuration
-│   │   │       │   ├── security/     # Security implementation
-│   │   │       │   ├── persistence/  # Repositories, adapters
-│   │   │       │   └── messaging/    # Event publishers, message brokers
-│   │   │       ├── [bounded-context-1]/  # Example: user
-│   │   │       │   ├── domain/       # Domain layer (core business logic)
-│   │   │       │   │   ├── model/    # Aggregates, entities, value objects
-│   │   │       │   │   ├── service/  # Domain services
-│   │   │       │   │   └── event/    # Domain events
-│   │   │       │   ├── application/  # Application layer
-│   │   │       │   │   ├── service/  # Application services (use cases)
-│   │   │       │   │   ├── dto/      # Data transfer objects
-│   │   │       │   │   └── port/     # Ports (interfaces for adapters)
-│   │   │       │   └── adapter/      # Adapters (interface layer)
-│   │   │       │       ├── in/       # Inbound adapters
-│   │   │       │       │   └── rest/ # REST controllers
-│   │   │       │       └── out/      # Outbound adapters
-│   │   │       │           └── persistence/ # Repository implementations
-│   │   │       ├── [bounded-context-2]/  # Example: order
-│   │   │       │   ├── domain/
-│   │   │       │   ├── application/
-│   │   │       │   └── adapter/
-│   │   │       └── Application.java  # Spring Boot main class
+│   │   ├── java/com/iqkv/foundation/aichatservice/
+│   │   │   ├── chat/                 # Main AI chat slice
+│   │   │   │   ├── ChatRestResource.java           # Member REST surface
+│   │   │   │   ├── AdminChatRestResource.java      # Admin REST surface
+│   │   │   │   ├── ChatService.java / Impl.java    # Slice service contract + implementation
+│   │   │   │   ├── ChatSession*.java               # Session model + mapper
+│   │   │   │   ├── ChatMessage*.java               # Message model + mapper
+│   │   │   │   ├── MessageRole.java
+│   │   │   │   └── dto/                            # Request/response records + static mapper
+│   │   │   ├── ping/                 # Liveness / readiness slice
+│   │   │   │   ├── PingRestResource.java
+│   │   │   │   └── PingDtos.java
+│   │   │   ├── infrastructure/       # Cross-cutting technical concerns, no business logic
+│   │   │   │   ├── config/           # Security, OpenAPI, MyBatis, AI and RabbitMQ config
+│   │   │   │   ├── security/         # Filters, JWT claim names
+│   │   │   │   ├── persistence/      # Tenant key providers
+│   │   │   │   ├── messaging/        # RabbitMQ consumers
+│   │   │   │   └── context/          # Platform context resolution
+│   │   │   ├── shared/               # Cross-slice kernel
+│   │   │   │   ├── exception/        # Common exception types
+│   │   │   │   └── util/             # Shared utilities
+│   │   │   └── AiChatServiceApplication.java       # Spring Boot main class
 │   │   └── resources/
-│   │       ├── application.yml       # Base configuration
-│   │       ├── application-local.yml # Local development profile
-│   │       └── db/changelog/         # Database migrations (if using Liquibase)
+│   │       ├── application.yml                      # Base configuration
+│   │       ├── application-{local,sit,uat,prd}.yml  # Per-environment profiles
+│   │       ├── mappers/chat/                        # MyBatis XML mappers
+│   │       └── db/changelog/{system,tenant}/        # Liquibase changelogs
 │   └── test/
-│       └── java/                     # Unit, integration, and architecture tests
-│           └── com/example/project/
-│               ├── [bounded-context]/
-│               │   ├── domain/       # Domain model tests
-│               │   ├── application/  # Application service tests
-│               │   └── adapter/      # Adapter tests
-│               └── architecture/     # ArchUnit tests
+│       └── java/com/iqkv/foundation/aichatservice/
+│           ├── <feature-slice>/      # Slice unit + security tests
+│           ├── IntegrationTest.java
+│           ├── TechnicalStructureTest.java          # ArchUnit
+│           └── AiChatServiceApplicationTests.java
 ├── .gitignore
 ├── pom.xml                           # Maven build configuration
 ├── README.md
 └── AGENTS.md                         # This file
 ```
 
-**Key DDD Concepts:**
+**Key structural concepts:**
 
-- **Bounded Context**: Logical boundary for a specific domain model (e.g., user, order, payment)
-- **Domain Layer**: Core business logic, entities, value objects, aggregates, domain services
-- **Application Layer**: Use cases, orchestration, DTOs, ports (interfaces)
-- **Adapter Layer**: Implementation of ports (REST controllers, repository implementations)
-- **Infrastructure**: Technical concerns (config, security, persistence framework)
-- **Shared Kernel**: Common code shared across bounded contexts
+- **Feature slice**: A self-contained top-level package for one feature (`chat`, `ping`) that holds
+  its REST resources, service contract + implementation, DTOs and slice-level mapper code. Add a
+  feature by adding a sibling package — never introduce `domain`/`application`/`adapter` layers.
+- **Infrastructure**: Cross-cutting technical concerns (config, security, persistence, messaging,
+  platform context) with no business logic.
+- **Shared kernel**: Common exceptions and utilities reused across slices; must not depend on any
+  slice or on `infrastructure`.
+- **ArchUnit**: `TechnicalStructureTest` runs `onionArchitecture().withOptionalLayers(true)`. With no
+  `domain`/`application`/`adapter` packages present the rule is intentionally permissive — the real
+  structural contract is the package layout above.
 
 ## Execution Discipline
 
@@ -134,14 +135,14 @@ Format: `type(scope): subject`
 
 - Subject: imperative, lowercase, no trailing period, ≤ 72 chars
 - Types: `feat`, `fix`, `improvement`, `refactor`, `docs`, `test`, `chore`, `ci`, `perf`, `revert`
-- Scope: affected bounded context or layer — replace `aichat` with your actual service name
+- Scope: affected feature slice or technical package (e.g. `chat`, `ping`, `security`, `messaging`, `deps`)
 - For `fix`: describe the symptom and trigger, not the code change
     - ✅ `fix(security): unauthenticated requests bypass tenant guard in single-tenant mode`
     - ❌ `fix(security): add missing auth check`
 
 Examples:
 
-- `feat(domain): add soft-delete support to aggregate root`
+- `feat(chat): add chat-session archival endpoint`
 - `fix(messaging): consumer silently drops events with unknown tenant key`
 - `refactor(infrastructure): extract CORS config into dedicated properties class`
 - `chore(deps): update spring-boot to 3.5.0`
@@ -264,7 +265,7 @@ Before making recommendations, agents should understand the project's technology
 - Database: PostgreSQL (production), H2 (test scope — smoke context-load only)
 - **MyBatis** with XML mappers — there is no Spring Data JPA / Hibernate in this project
 - `mybatis.configuration.map-underscore-to-camel-case=true` is enabled globally
-- Mapper interfaces annotated with `@Mapper`; XML mapper files in `src/main/resources/mappers/<context>/`
+- Mapper interfaces annotated with `@Mapper`; XML mapper files live in `src/main/resources/mappers/chat/`
 - Liquibase for schema migrations (`db/changelog/system/db.changelog-system.xml`)
 - **ShedLock** (`shedlock-spring` + `shedlock-provider-jdbc-template`) for distributed scheduled job locking
 
@@ -893,11 +894,11 @@ A task is evaluated as done only when all of the following hold:
 | Change type                                                     | Required gates                                                                             |
 | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
 | Any change                                                      | `./mvnw -q compile`, then the narrowest targeted `./mvnw test -Dtest=ClassName`            |
-| Domain / application / service logic                            | Unit tests (JUnit 5 + Mockito, AAA); a new non-trivial branch, loop or parser needs a test |
+| Service / feature-slice logic                                   | Unit tests (JUnit 5 + Mockito, AAA); a new non-trivial branch, loop or parser needs a test |
 | MyBatis mapper (interface or XML)                               | Service-level test covering the mapper path, then full `./mvnw verify`                     |
 | REST controller, Spring Security, `@PreAuthorize`, tenant guard | Security test, then full `./mvnw verify`                                                   |
 | Liquibase changelog                                             | Full `./mvnw verify` — the Spring context and schema must load cleanly                     |
-| Package/layer move, new bounded context                         | ArchUnit `TechnicalStructureTest`, then full `./mvnw verify`                               |
+| Package move or new feature slice                               | ArchUnit `TechnicalStructureTest`, then full `./mvnw verify`                               |
 | Dependency or build config                                      | Full `./mvnw verify`                                                                       |
 | Docs or `AGENTS.md` only                                        | No code gate — state that none applies                                                     |
 
