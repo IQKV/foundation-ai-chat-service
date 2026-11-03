@@ -183,30 +183,11 @@ services:
       - aichat-service-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:11434/api/tags"]
+      test: ["CMD", "ollama", "list"]
       interval: 10s
       timeout: 5s
       retries: 10
       start_period: 30s
-
-  # Ollama model init — pulls the chat model on first start.
-  # Exits on success; restart: on-failure retries if Ollama isn't ready yet.
-  ollama-init:
-    image: ollama/ollama:latest
-    container_name: foundation-aichat-ollama-init-dev
-    depends_on:
-      ollama:
-        condition: service_healthy
-    networks:
-      - aichat-service-network
-    environment:
-      OLLAMA_HOST: "http://ollama:11434"
-    entrypoint: >
-      /bin/sh -c "
-        ollama pull llama3.2 &&
-        echo 'Models ready.'
-      "
-    restart: on-failure
 
   # SonarQube for code quality analysis
   sonar:
