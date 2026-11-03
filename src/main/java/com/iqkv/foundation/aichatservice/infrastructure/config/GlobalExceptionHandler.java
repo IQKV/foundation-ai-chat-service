@@ -22,6 +22,7 @@ import java.net.URI;
 import java.util.UUID;
 
 import com.iqkv.foundation.aichatservice.shared.exception.ChatSessionNotFoundException;
+import com.iqkv.foundation.aichatservice.shared.exception.PromptInjectionException;
 import com.iqkv.foundation.entitlement.plan.BillingServiceException;
 import com.iqkv.foundation.entitlement.plan.PlanFeatureNotAvailableException;
 import org.slf4j.Logger;
@@ -71,6 +72,17 @@ public class GlobalExceptionHandler {
     final ProblemDetail pd = problem("about:blank", "Not Found", 404,
         ex.getMessage(), request);
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(pd);
+  }
+
+  @ExceptionHandler(PromptInjectionException.class)
+  public ResponseEntity<ProblemDetail> handlePromptInjection(final PromptInjectionException ex,
+                                                             final HttpServletRequest request) {
+    // The matched rule is logged but never returned: echoing it back would tell an
+    // attacker which patterns to avoid on the next attempt.
+    log.warn("Prompt injection blocked: rule={}", ex.getRule());
+    final ProblemDetail pd = problem("about:blank", "Message Rejected", 400,
+        "This message can't be sent. Please rephrase it and try again.", request);
+    return ResponseEntity.badRequest().body(pd);
   }
 
   @ExceptionHandler(NonTransientAiException.class)

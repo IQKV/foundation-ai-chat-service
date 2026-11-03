@@ -16,6 +16,7 @@
 
 package com.iqkv.foundation.aichatservice.chat.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -30,7 +31,7 @@ public final class ChatDtos {
   /**
    * Request to send a message. {@code sessionId} is nullable — null means create a new session.
    */
-  public record SendMessageRequest(UUID sessionId, String content, String model) {
+  public record SendMessageRequest(UUID sessionId, @NotBlank String content, String model) {
   }
 
   public record ChatResponse(UUID sessionId, String sessionTitle, String reply, String model, Instant timestamp) {

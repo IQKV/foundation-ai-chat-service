@@ -34,6 +34,8 @@ import org.springframework.validation.annotation.Validated;
  *       1.0 = creative). Use lower values for factual / support use cases.</li>
  *   <li>{@code default-model} — Ollama model tag used when the client does not
  *       specify a model in the request. Override via {@code AI_DEFAULT_MODEL} env var.</li>
+ *   <li>{@code guard} — prompt-injection guard settings. {@code guard.enabled} turns
+ *       input rejection and the output leak check on or off.</li>
  * </ul>
  */
 @Validated
@@ -43,5 +45,15 @@ public record AiChatProperties(
     int maxInputChars,
     int maxOutputTokens,
     double temperature,
-    String defaultModel) {
+    String defaultModel,
+    Guard guard) {
+
+  /**
+   * Prompt-injection guard settings.
+   *
+   * @param enabled when false, messages are forwarded to the model unfiltered and replies are
+   *                not checked for system-prompt leakage — a kill switch for false positives
+   */
+  public record Guard(boolean enabled) {
+  }
 }
