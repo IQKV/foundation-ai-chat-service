@@ -1,7 +1,7 @@
 services:
   # PostgreSQL Database for AI Chat Service - Local Development
   postgres-aichat:
-    image: postgres:17-alpine
+    image: pgvector/pgvector:pg17-bookworm
     container_name: foundation-aichat-postgres-dev
     environment:
       POSTGRES_DB: aichat
@@ -173,19 +173,40 @@ services:
     image: ollama/ollama:latest
     container_name: foundation-aichat-ollama-dev
     environment:
-      # Allow requests from the service container and the local browser
       OLLAMA_ORIGINS: "http://localhost:8080,http://aichat-service:8080"
-      # Keep models loaded indefinitely (no idle unload)
       OLLAMA_KEEP_ALIVE: -1
     ports:
-      - "11434:11434" # Ollama REST API
+      - "11434:11434"
     volumes:
       - ollama_aichat_data:/root/.ollama
     networks:
       - aichat-service-network
     restart: unless-stopped
-    # Pull a model after first start:
-    #   docker exec foundation-aichat-ollama-dev ollama pull llama3.2
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:11434/api/tags"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # Ollama model init — pulls the chat model on first start.
+  # Exits on success; restart: on-failure retries if Ollama isn't ready yet.
+  ollama-init:
+    image: ollama/ollama:latest
+    container_name: foundation-aichat-ollama-init-dev
+    depends_on:
+      ollama:
+        condition: service_healthy
+    networks:
+      - aichat-service-network
+    environment:
+      OLLAMA_HOST: "http://ollama:11434"
+    entrypoint: >
+      /bin/sh -c "
+        ollama pull llama3.2 &&
+        echo 'Models ready.'
+      "
+    restart: on-failure
 
   # SonarQube for code quality analysis
   sonar:
