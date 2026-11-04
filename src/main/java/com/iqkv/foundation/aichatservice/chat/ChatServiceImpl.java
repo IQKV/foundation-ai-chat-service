@@ -25,6 +25,7 @@ import com.iqkv.foundation.aichatservice.chat.dto.ChatDtoMapper;
 import com.iqkv.foundation.aichatservice.chat.dto.ChatDtos;
 import com.iqkv.foundation.aichatservice.infrastructure.config.AiChatProperties;
 import com.iqkv.foundation.aichatservice.shared.exception.ChatSessionNotFoundException;
+import com.iqkv.foundation.aichatservice.shared.exception.EmptyMessageException;
 import com.iqkv.foundation.aichatservice.shared.exception.PromptInjectionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,6 +80,13 @@ public class ChatServiceImpl implements ChatService {
   public ChatDtos.ChatResponse chat(final UUID actorId, final String firstName,
                                     final String lastName, final String planCode,
                                     final ChatDtos.SendMessageRequest request) {
+    // Reject input that carries no visible text before anything is persisted or sent to the
+    // model: a message that normalises to nothing has no prompt to answer.
+    if (PromptGuard.isEffectivelyBlank(request.content())) {
+      log.warn("Rejected empty chat message: actorId={}", actorId);
+      throw new EmptyMessageException();
+    }
+
     final var verdict = guardEnabled() ? PromptGuard.inspect(request.content()) : PromptGuard.Verdict.allowed();
 
     if (verdict.blocked()) {
@@ -98,15 +106,24 @@ public class ChatServiceImpl implements ChatService {
       session.setCreatedAt(Instant.now());
       session.setUpdatedAt(Instant.now());
       chatSessionMapper.insert(session);
+      log.info("Created chat session: sessionId={}, actorId={}, model={}",
+          session.getId(), actorId, session.getModel());
     } else {
       session = chatSessionMapper.findById(request.sessionId())
           .orElseThrow(() -> new ChatSessionNotFoundException(request.sessionId()));
+      log.info("Resumed chat session: sessionId={}, actorId={}, model={}",
+          session.getId(), actorId, session.getModel());
     }
 
     // Guard: truncate user input to configured max to avoid context blowout
-    final String userContent = request.content().length() > aiProps.maxInputChars()
-        ? request.content().substring(0, aiProps.maxInputChars())
-        : request.content();
+    final String userContent;
+    if (request.content().length() > aiProps.maxInputChars()) {
+      userContent = request.content().substring(0, aiProps.maxInputChars());
+      log.warn("Truncated chat input to {} chars: sessionId={}, actorId={}, originalChars={}",
+          aiProps.maxInputChars(), session.getId(), actorId, request.content().length());
+    } else {
+      userContent = request.content();
+    }
 
     final var userMessage = new ChatMessage();
     userMessage.setId(UUID.randomUUID());
@@ -140,13 +157,23 @@ public class ChatServiceImpl implements ChatService {
       promptSpec = promptSpec.tools(platformFunctions);
     }
 
+    log.info("Calling model: sessionId={}, model={}, inputChars={}, tools={}",
+        session.getId(), session.getModel(), userContent.length(), platformFunctions.size());
+
+    final long startedAt = System.nanoTime();
     var reply = promptSpec
         .call()
         .content();
+    final long elapsedMs = (System.nanoTime() - startedAt) / 1_000_000;
 
     if (reply == null) {
+      log.warn("Model returned empty response: sessionId={}, model={}, elapsedMs={}",
+          session.getId(), session.getModel(), elapsedMs);
       throw new NonTransientAiException("LLM returned empty response");
     }
+
+    log.info("Received model reply: sessionId={}, replyChars={}, elapsedMs={}",
+        session.getId(), reply.length(), elapsedMs);
 
     // Output-side guard: the model must not echo its instructions back to the user
     if (guardEnabled() && PromptGuard.leaksSystemPrompt(reply, systemPrompt)) {

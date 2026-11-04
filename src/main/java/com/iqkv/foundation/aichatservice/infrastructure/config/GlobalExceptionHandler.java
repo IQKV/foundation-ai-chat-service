@@ -22,6 +22,7 @@ import java.net.URI;
 import java.util.UUID;
 
 import com.iqkv.foundation.aichatservice.shared.exception.ChatSessionNotFoundException;
+import com.iqkv.foundation.aichatservice.shared.exception.EmptyMessageException;
 import com.iqkv.foundation.aichatservice.shared.exception.PromptInjectionException;
 import com.iqkv.foundation.entitlement.plan.BillingServiceException;
 import com.iqkv.foundation.entitlement.plan.PlanFeatureNotAvailableException;
@@ -32,6 +33,7 @@ import org.springframework.ai.retry.NonTransientAiException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
@@ -82,6 +84,15 @@ public class GlobalExceptionHandler {
     log.warn("Prompt injection blocked: rule={}", ex.getRule());
     final ProblemDetail pd = problem("about:blank", "Message Rejected", 400,
         "This message can't be sent. Please rephrase it and try again.", request);
+    return ResponseEntity.badRequest().body(pd);
+  }
+
+  @ExceptionHandler(EmptyMessageException.class)
+  public ResponseEntity<ProblemDetail> handleEmptyMessage(final EmptyMessageException ex,
+                                                          final HttpServletRequest request) {
+    log.warn("Rejected empty chat message: {}", ex.getMessage());
+    final ProblemDetail pd = problem("about:blank", "Message Rejected", 400,
+        "The message is empty. Please type something and try again.", request);
     return ResponseEntity.badRequest().body(pd);
   }
 
@@ -177,6 +188,15 @@ public class GlobalExceptionHandler {
     final ProblemDetail pd = problem("about:blank", "Not Acceptable", 406,
         ex.getMessage(), request);
     return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(pd);
+  }
+
+  @ExceptionHandler(HttpMessageNotReadableException.class)
+  public ResponseEntity<ProblemDetail> handleMessageNotReadable(final HttpMessageNotReadableException ex,
+                                                                final HttpServletRequest request) {
+    log.warn("Missing or malformed request body: {}", ex.getMessage());
+    final ProblemDetail pd = problem("about:blank", "Bad Request", 400,
+        "Request body is missing or malformed", request);
+    return ResponseEntity.badRequest().body(pd);
   }
 
   @ExceptionHandler(MissingServletRequestParameterException.class)

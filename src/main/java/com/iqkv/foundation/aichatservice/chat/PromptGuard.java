@@ -167,6 +167,19 @@ public final class PromptGuard {
   }
 
   /**
+   * True when the message carries no visible text once invisible characters are stripped.
+   *
+   * <p>Input such as a zero-width space or another format character passes a plain blank
+   * check but normalises to nothing, so the model would receive an empty turn.
+   *
+   * @param content raw user message, may be null
+   * @return true when there is nothing meaningful to send
+   */
+  public static boolean isEffectivelyBlank(final String content) {
+    return content == null || normalise(content).isBlank();
+  }
+
+  /**
    * Detects a reply that echoes the system prompt back to the user.
    *
    * <p>Any sentence of the system prompt at least forty characters long that reappears verbatim

@@ -170,6 +170,26 @@ class PromptGuardTest {
     assertThat(PromptGuard.inspect("   ").blocked()).isFalse();
   }
 
+  @ParameterizedTest
+  @ValueSource(strings = {"", "   ", "\u200B", "\u200B\u202E"})
+  @DisplayName("Should treat input with no visible text as effectively blank")
+  void shouldDetectEffectivelyBlankInput(final String message) {
+    assertThat(PromptGuard.isEffectivelyBlank(message)).as("message=U+%s", message.length()).isTrue();
+  }
+
+  @Test
+  @DisplayName("Should treat null as effectively blank")
+  void shouldTreatNullAsEffectivelyBlank() {
+    assertThat(PromptGuard.isEffectivelyBlank(null)).isTrue();
+  }
+
+  @Test
+  @DisplayName("Should not treat real text as effectively blank")
+  void shouldNotTreatRealTextAsEffectivelyBlank() {
+    assertThat(PromptGuard.isEffectivelyBlank("How do I upgrade?")).isFalse();
+    assertThat(PromptGuard.isEffectivelyBlank("  hi  ")).isFalse();
+  }
+
   @Test
   @DisplayName("Should detect a reply echoing the system prompt")
   void shouldDetectSystemPromptLeak() {
