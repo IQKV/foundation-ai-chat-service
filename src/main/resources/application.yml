@@ -48,7 +48,10 @@ mybatis:
 
 server:
   port: 8080
-  forward-headers-strategy: framework
+  request:
+    header:
+      forwarded:
+        strategy: framework
   shutdown: graceful
   tomcat:
     # Extended for LLM inference — llama3.1:8b can take 60-120s for long responses.
